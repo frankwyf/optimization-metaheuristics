@@ -1,3 +1,4 @@
+import argparse
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -5,7 +6,6 @@ import time
 import seaborn as sns
 
 sns.set_style("whitegrid")
-np.random.seed(int(time.time())) # 设置随机数种子
 
 num = 20000  # 每次更新温度时的迭代次数
 R = 0.5    # 控制温度降低快慢， T = T * R
@@ -13,6 +13,23 @@ T_max = 20  # 初始温度
 T_min = 0.01  # 下限温度
 
 xs_bounds = [[0.1, 2], [0.1, 10], [0.1, 10], [0.1, 2]]  # x1, x2, x3, x4取值范围
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run the Simulated Annealing benchmark.')
+    parser.add_argument('--seed', type=int, default=None, help='Random seed for NumPy.')
+    parser.add_argument('--runs', type=int, default=20, help='Number of repeated runs.')
+    parser.add_argument('--samples-per-temperature', type=int, default=num,
+                        help='Samples evaluated before each temperature update.')
+    parser.add_argument('--no-plot', action='store_true', help='Disable Matplotlib windows.')
+    return parser.parse_args()
+
+
+def maybe_show(enabled):
+    if enabled:
+        plt.show()
+    else:
+        plt.close('all')
 
 
 def aim_function(xs):
@@ -94,7 +111,7 @@ def adjust(xs):
         return xs
 
 
-def main():
+def main(samples_per_temperature=num, show_plot=True):
     # 记录开始时间
     start_time = time.time()
     count = 0  # 记录迭代次数
@@ -118,7 +135,7 @@ def main():
     while T > T_min:
         count += 1
         # 对每个变量进行更新状态
-        for i in range(num):
+        for i in range(samples_per_temperature):
             # 生成新的状态
             xs_temp = [np.random.uniform(xs_bounds[i][0], xs_bounds[i][1]) for i in range(4)]
 
@@ -196,13 +213,13 @@ def main():
     time_consume= end_time - start_time
     print("程序运行时间：", time_consume, "s")
     # 绘制目标函数值和温度的变化曲线
-    Plot(Best_array, T_array)
+    Plot(Best_array, T_array, show_plot=show_plot)
 
     # 返回最优的目标函数值和对应的变量值
     return Best_A, xs, time_consume
 
 
-def Plot(Best_array, T_array):
+def Plot(Best_array, T_array, show_plot=True):
     # 绘制目标函数值和温度的变化曲线
     plt.figure(1)
     x_num = [i+1 for i in range(len(Best_array))]
@@ -219,16 +236,22 @@ def Plot(Best_array, T_array):
     plt.xlabel('迭代次数(次): ' + str(x_num[-1]) + " 方差 " + str(np.var(Best_array)))
     plt.ylabel('目标函数值' + " 平均值 " + str(np.mean(Best_array)))
 
-    plt.show()
+    maybe_show(show_plot)
 
 
 if __name__ == '__main__':
-    N = 20  # 运行次数
+    args = parse_args()
+    if args.seed is not None:
+        np.random.seed(args.seed)
+    else:
+        np.random.seed(int(time.time()))
+
+    N = args.runs  # 运行次数
     Bests = []
     xs = []
     consume = [] # 运行时间
     for _ in range(N):
-        y, x, t_consume= main()
+        y, x, t_consume= main(samples_per_temperature=args.samples_per_temperature, show_plot=not args.no_plot)
         Bests.append(y)
         xs.append(x)
         consume.append(t_consume)
@@ -257,4 +280,4 @@ if __name__ == '__main__':
     plt.ylabel('运行时间' + " 方差 " + str(np.var(consume)))
     plt.xlabel('迭代次数')
 
-    plt.show()
+    maybe_show(not args.no_plot)

@@ -1,3 +1,4 @@
+import argparse
 import math
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,6 +11,22 @@ sns.set_style("whitegrid")
 # 支持中文
 plt.rcParams['font.sans-serif'] = ['SimHei']  # 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False  # 用来正常显示负号
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Run the Genetic Algorithm benchmark.')
+    parser.add_argument('--seed', type=int, default=None, help='Random seed for NumPy.')
+    parser.add_argument('--runs', type=int, default=20, help='Number of repeated runs.')
+    parser.add_argument('--max-iteration', type=int, default=1300, help='Maximum iterations per run.')
+    parser.add_argument('--no-plot', action='store_true', help='Disable Matplotlib windows.')
+    return parser.parse_args()
+
+
+def maybe_show(enabled):
+    if enabled:
+        plt.show()
+    else:
+        plt.close()
 
 
 class GA_optimizer():
@@ -346,12 +363,13 @@ class GA_Individual():
 
 
 if __name__ == '__main__':
+    args = parse_args()
     T0 = time.time()
-    # 最大迭代次数
-    max_iteration = 1300
 
-    # 设置随机数种子
-    np.random.seed(int(time.time()))
+    if args.seed is not None:
+        np.random.seed(args.seed)
+    else:
+        np.random.seed(int(time.time()))
 
     # 生成GA_Individual类的实例
     optimizer = GA_optimizer(GA_Individual, 300, 0.95, 0.7, 250, last_generation_left=0.5,
@@ -361,10 +379,10 @@ if __name__ == '__main__':
     best_fitnesses = []
     TIMES = []
     t_before = time.time() - T0
-    for i in range(20):
+    for i in range(args.runs):
         t0 = time.time()
         # 绘制出每次仿真过程中目标函数的变化曲线
-        best_individual, fitness_history = optimizer.optimize(max_iteration)
+        best_individual, fitness_history = optimizer.optimize(args.max_iteration)
         TIMES.append(time.time() - t0 + t_before)  # 记录每次仿真的耗时
         best_fitnesses.append(min(fitness_history))  # 记录每次仿真的最佳性能
         x0, x1, x2, x3 = best_individual.xs_chromosome()
@@ -379,7 +397,7 @@ if __name__ == '__main__':
                   + "\n最小值 " + str(np.min(fitness_history)) + " 最大值 " + str(np.max(fitness_history)))
         print('最佳选点:   X1: ' + str(x0_best) + 'X2: ' + str(x1_best) + 'X3: ' + str(x2_best) + 'X4: ' + str(x3_best))
         print('最小目标值:' + str(min(fitness_history)))
-        plt.show()
+        maybe_show(not args.no_plot)
 
     best_fitnesses = np.array(best_fitnesses)
     TIMES = np.array(TIMES)
@@ -394,4 +412,4 @@ if __name__ == '__main__':
     ax2.set(title='GA--优化时间--平均: %.3f\n最佳: %.3f 最差: %.3f' %
                   (TIMES.mean(), TIMES.min(), TIMES.max()),
             ylabel='运行部分耗时/s  方差: %.8f' % TIMES.var(), xlabel='实验次数: ' + str(len(TIMES)))
-    plt.show()
+    maybe_show(not args.no_plot)

@@ -1,51 +1,84 @@
 # Optimization Metaheuristics
 
-Metaheuristic optimization experiments for the welded beam
-constrained-design benchmark.
+Metaheuristic optimization experiments for the welded beam constrained-design benchmark.
 
-## Included experiment runners
+This repository is prepared as an open-source release version with:
 
-| File | Algorithm |
-|------|-----------|
-| `final/GA.py` | Genetic Algorithm |
-| `final/PSO.py` | Particle Swarm Optimization |
-| `final/SA.py` | Simulated Annealing |
-| `Snake.py` | Snake Optimizer (exploratory) |
-| `Whale.py` | Whale Optimization Algorithm (exploratory) |
-| `Golden_jackal.py` | Golden Jackal Optimizer (exploratory) |
-| `general.py` | Shared objective function and constraints |
+- a cleaned top-level structure
+- stable runnable scripts grouped in `final/`
+- legacy exploratory scripts isolated in `legacy/`
+- multilingual documentation under `docs/`
 
-## Quick start
+## Language Docs
+
+- English companion: [docs/README.en.md](docs/README.en.md)
+- Chinese: [docs/README.zh-CN.md](docs/README.zh-CN.md)
+- Japanese: [docs/README.ja.md](docs/README.ja.md)
+
+## Release Notes
+
+- English release notes: [docs/RELEASE_NOTES.en.md](docs/RELEASE_NOTES.en.md)
+- Chinese release notes: [docs/RELEASE_NOTES.zh-CN.md](docs/RELEASE_NOTES.zh-CN.md)
+- Japanese release notes: [docs/RELEASE_NOTES.ja.md](docs/RELEASE_NOTES.ja.md)
+
+## Repository Layout
+
+| Path | Description |
+|------|-------------|
+| `final/GA.py` | Genetic Algorithm runner (current version) |
+| `final/PSO.py` | Particle Swarm Optimization runner (current version) |
+| `final/SA.py` | Simulated Annealing runner (current version) |
+| `scripts/run.py` | Unified CLI entrypoint for maintained algorithms |
+| `general.py` | Shared objective and constraint definitions |
+| `legacy/` | Archived exploratory scripts not maintained as release baseline |
+| `docs/` | Release docs and multilingual guides |
+| `.github/workflows/ci.yml` | Minimal CI for dependency install and syntax validation |
+
+## Quick Start
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate          # Windows PowerShell
-# source .venv/bin/activate       # macOS / Linux
-
+.venv\Scripts\activate
 pip install -r requirements.txt
-python final/GA.py
+python scripts/run.py ga
 ```
 
-Replace `final/GA.py` with `final/PSO.py` or `final/SA.py` to run other
-experiment sets.
+Use `python scripts/run.py pso` or `python scripts/run.py sa` to run other algorithms.
 
-## What to expect
+Lightweight reproducible examples:
 
-These scripts are experiment-style runners, not a packaged library. They
-typically:
+```bash
+python scripts/run.py ga --seed 7 --runs 1 --max-iteration 50 --no-plot
+python scripts/run.py pso --seed 7 --runs 1 --iterations 20 --no-plot
+python scripts/run.py sa --seed 7 --runs 1 --samples-per-temperature 200 --no-plot
+```
 
-- print optimization statistics to the console
-- open Matplotlib windows
-- plot convergence behavior across repeated runs
+List supported algorithms:
 
-## Benchmark problem
+```bash
+python scripts/run.py --list
+```
 
-The **welded beam design** problem minimizes fabrication cost subject to
-stress, deflection, and buckling constraints. It is a standard benchmark in
-constrained engineering optimization.
+Example benchmark visualization asset: [docs/assets/welded-beam-contours.png](docs/assets/welded-beam-contours.png)
 
-Variables: weld height (x1), weld length (x2), beam height (x3), beam
-thickness (x4).
+## Benchmark Problem
+
+The welded beam design problem minimizes fabrication cost subject to stress,
+deflection, and buckling constraints.
+
+Design variables:
+
+- `x1`: weld height
+- `x2`: weld length
+- `x3`: beam height
+- `x4`: beam thickness
+
+## Open-Source Release Notes
+
+- No API keys, tokens, private credentials, or local absolute paths are stored.
+- Legacy exploratory code is preserved separately for reproducibility.
+- Current release baseline is the `final/` directory.
+- A minimal GitHub Actions workflow validates dependency installation and Python syntax.
 
 ## License
 
