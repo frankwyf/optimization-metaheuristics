@@ -14,3 +14,7 @@ dist/
 *.egg-info/
 results/
 figures/
+coverage.xml
+htmlcov/
+.coverage
+*.whl
