@@ -1,0 +1,61 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it using the following metadata."
+title: "optimization-metaheuristics"
+abstract: >
+  A Python implementation of metaheuristic optimization algorithms (Genetic
+  Algorithm, Particle Swarm Optimization, and Simulated Annealing) benchmarked
+  on the welded-beam constrained engineering design problem (Deb 1991).
+  Includes a canonical problem module, refactored algorithm classes with type
+  hints, a comprehensive test suite, and trilingual documentation.
+authors:
+  - family-names: "Yifan"
+    given-names: "Frank"
+    alias: frankwyf
+repository-code: "https://github.com/frankwyf/optimization-metaheuristics"
+license: MIT
+version: "1.1.0"
+date-released: "2026-06-30"
+keywords:
+  - metaheuristics
+  - genetic algorithm
+  - particle swarm optimization
+  - simulated annealing
+  - engineering design optimization
+  - welded beam
+  - constrained optimization
+  - python
+references:
+  - type: article
+    authors:
+      - family-names: Deb
+        given-names: Kalyanmoy
+    title: "Optimal design of a welded beam via genetic algorithms"
+    journal: "AIAA Journal"
+    volume: 29
+    issue: 11
+    pages: "2013-2015"
+    year: 1991
+    doi: "10.2514/3.10834"
+  - type: conference-paper
+    authors:
+      - family-names: Kennedy
+        given-names: James
+      - family-names: Eberhart
+        given-names: Russell
+    title: "Particle swarm optimization"
+    collection-title: "Proceedings of ICNN'95 - International Conference on Neural Networks"
+    year: 1995
+  - type: article
+    authors:
+      - family-names: Kirkpatrick
+        given-names: Scott
+      - family-names: Gelatt
+        given-names: "C. D."
+      - family-names: Vecchi
+        given-names: "M. P."
+    title: "Optimization by simulated annealing"
+    journal: Science
+    volume: 220
+    issue: 4598
+    pages: "671-680"
+    year: 1983
