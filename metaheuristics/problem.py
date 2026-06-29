@@ -22,7 +22,7 @@ AIAA Journal, 29(11), 2013-2015.
 from __future__ import annotations
 
 import math
-from typing import Sequence
+from collections.abc import Sequence
 
 # ---------------------------------------------------------------------------
 # Search-space bounds: [(lower, upper), ...]

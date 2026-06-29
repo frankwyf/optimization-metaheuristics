@@ -26,8 +26,8 @@ def plot_convergence(
     title: str = "Convergence Comparison",
     xlabel: str = "Iteration",
     ylabel: str = "Best Objective Value",
-    ax: "matplotlib.axes.Axes | None" = None,
-) -> "matplotlib.axes.Axes":
+    ax: matplotlib.axes.Axes | None = None,
+) -> matplotlib.axes.Axes:
     """Plot convergence curves for one or more algorithms.
 
     一つ以上のアルゴリズムの収束曲線をプロットする。
@@ -64,8 +64,8 @@ def plot_convergence(
 def plot_run_statistics(
     results_per_algo: dict[str, list[float]],
     title: str = "Multi-run Statistics",
-    ax: "matplotlib.axes.Axes | None" = None,
-) -> "matplotlib.axes.Axes":
+    ax: matplotlib.axes.Axes | None = None,
+) -> matplotlib.axes.Axes:
     """Box-plot of best costs across repeated runs per algorithm.
 
     アルゴリズムごとに複数回実行の最良コストの箱ひげ図。

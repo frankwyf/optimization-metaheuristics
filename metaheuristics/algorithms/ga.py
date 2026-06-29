@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 
@@ -68,7 +68,7 @@ class _Individual:
         bits = np.random.randint(0, 2, self._bin_len * len(self._bounds))
         self.chromosome = "".join(map(str, bits))
 
-    def crossover(self, other: "_Individual") -> tuple[str, str]:
+    def crossover(self, other: _Individual) -> tuple[str, str]:
         """Two-point crossover returning two child chromosomes."""
         total = self._bin_len * len(self._bounds)
         lo, hi = sorted(np.random.choice(range(total), size=2, replace=False))
@@ -84,7 +84,7 @@ class _Individual:
         total = self._bin_len * len(self._bounds)
         flip_mask = np.random.rand(total) < prob
         mask_int = int("".join(str(int(b)) for b in flip_mask), 2)
-        new_chrom = ("{:0%db}" % total).format(mask_int ^ int(self.chromosome, 2))
+        new_chrom = f"{mask_int ^ int(self.chromosome, 2):0{total}b}"
         candidate = _Individual(new_chrom).decode()
         if is_feasible(candidate):
             self.chromosome = new_chrom

@@ -32,7 +32,7 @@ _ITERS: int = 100  # Number of velocity-update iterations
 _V_CLAMP = [(-(hi - lo) * 0.2, (hi - lo) * 0.2) for lo, hi in BOUNDS]
 
 
-def _random_feasible_particle(rng: random) -> np.ndarray:  # type: ignore[type-arg]
+def _random_feasible_particle(rng: _random.Random) -> np.ndarray:
     """Sample a random initial position that satisfies all constraints.
 
     拘束を満たす乱数初期位置をサンプリングする。
