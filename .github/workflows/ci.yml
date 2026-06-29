@@ -2,34 +2,81 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [master, main]
   pull_request:
 
 jobs:
-  validate:
+  test:
+    name: Test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: pip
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov
 
-      - name: CLI help smoke check
-        run: python scripts/run.py --help
+      - name: Compile all maintained sources
+        run: python -m compileall general.py final scripts metaheuristics
 
-      - name: Compile maintained sources
-        run: python -m compileall general.py final scripts
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/ -v --tb=short \
+            --cov=metaheuristics \
+            --cov-report=term-missing \
+            --cov-report=xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Lint with ruff
+        run: ruff check metaheuristics/ scripts/ --output-format=github
+
+  cli-smoke:
+    name: CLI smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: List algorithms
+        run: python scripts/run.py --list
+      - name: SA quick run (no plot)
+        run: python scripts/run.py sa --seed 42 --runs 1 --samples-per-temperature 200 --no-plot
+      - name: PSO quick run (no plot)
+        run: python scripts/run.py pso --seed 42 --runs 1 --iterations 5 --no-plot
+      - name: GA quick run (no plot)
+        run: python scripts/run.py ga --seed 42 --runs 1 --max-iteration 5 --no-plot
+
