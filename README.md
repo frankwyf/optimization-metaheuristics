@@ -129,7 +129,7 @@ See [CITATION.cff](CITATION.cff) for full metadata.
 
 ### License
 
-[MIT](LICENSE) · See also [CONTRIBUTING](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md)
+[MIT](LICENSE) · [Developer Guide](DEVELOPMENT.md) · [Contributing](CONTRIBUTING.md) · [Code of Conduct](CODE_OF_CONDUCT.md) · [Security](SECURITY.md)
 
 ---
 
@@ -175,7 +175,7 @@ print(f"cost={result.best_cost:.5f}  可行={result.is_feasible}")
 
 ### 许可证
 
-[MIT](LICENSE) · [贡献指南](CONTRIBUTING.md) · [行为准则](CODE_OF_CONDUCT.md) · [安全政策](SECURITY.md)
+[MIT](LICENSE) · [开发指南](DEVELOPMENT.md) · [贡献指南](CONTRIBUTING.md) · [行为准则](CODE_OF_CONDUCT.md) · [安全政策](SECURITY.md)
 
 ---
 
@@ -222,5 +222,5 @@ print(f"cost={result.best_cost:.5f}  実行可能={result.is_feasible}")
 
 ### ライセンス
 
-[MIT](LICENSE) · [コントリビューションガイド](CONTRIBUTING.md) · [行動規範](CODE_OF_CONDUCT.md) · [セキュリティポリシー](SECURITY.md)
+[MIT](LICENSE) · [開発者ガイド](DEVELOPMENT.md) · [コントリビューションガイド](CONTRIBUTING.md) · [行動規範](CODE_OF_CONDUCT.md) · [セキュリティポリシー](SECURITY.md)
 

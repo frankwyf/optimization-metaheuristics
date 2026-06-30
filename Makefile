@@ -14,12 +14,12 @@ test:
 
 ## Run ruff lint check
 lint:
-	ruff check metaheuristics/ scripts/ tests/
+	ruff check metaheuristics/ scripts/ tests/ examples/
 
 ## Auto-format and fix lint issues
 format:
-	ruff check metaheuristics/ scripts/ tests/ --fix
-	ruff format metaheuristics/ scripts/ tests/
+	ruff check metaheuristics/ scripts/ tests/ examples/ --fix
+	ruff format metaheuristics/ scripts/ tests/ examples/
 
 ## Run all four algorithms (quick mode, no plot)
 run-all:

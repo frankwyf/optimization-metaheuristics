@@ -57,7 +57,7 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Lint with ruff
-        run: ruff check metaheuristics/ scripts/ tests/ --output-format=github
+        run: ruff check metaheuristics/ scripts/ tests/ examples/ --output-format=github
 
   cli-smoke:
     name: CLI smoke test
