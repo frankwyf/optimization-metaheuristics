@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import pytest
 
-from metaheuristics.algorithms.sa import SimulatedAnnealing
 from metaheuristics.algorithms.base import OptimisationResult
+from metaheuristics.algorithms.sa import SimulatedAnnealing
 
 
 class TestSimulatedAnnealingSmoke:

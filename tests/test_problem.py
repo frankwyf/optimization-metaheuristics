@@ -6,8 +6,6 @@ from __future__ import annotations
 
 import math
 
-import pytest
-
 from metaheuristics.problem import (
     BOUNDS,
     KNOWN_OPTIMUM,
