@@ -18,3 +18,5 @@ coverage.xml
 htmlcov/
 .coverage
 *.whl
+convergence_*.png
+comparison.png
