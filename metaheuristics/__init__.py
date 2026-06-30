@@ -1,7 +1,7 @@
 """
 optimization-metaheuristics
 ===========================
-Metaheuristic optimization algorithms (GA, PSO, SA) benchmarked on the
+Metaheuristic optimization algorithms (GA, PSO, SA, DE) benchmarked on the
 welded-beam engineering design problem.
 
 Quick start
@@ -14,10 +14,10 @@ Quick start
 """
 from __future__ import annotations
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 __author__ = "frankwyf"
 __license__ = "MIT"
 
-from metaheuristics import problem  # noqa: F401
+from metaheuristics import benchmarks, problem  # noqa: F401
 
-__all__ = ["problem", "__version__"]
+__all__ = ["benchmarks", "problem", "__version__"]

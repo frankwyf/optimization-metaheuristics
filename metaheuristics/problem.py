@@ -47,6 +47,8 @@ _DELTA_MAX: float = 0.25  # Max allowable deflection    (in)
 
 # Near-optimal reference value from literature
 KNOWN_OPTIMUM: float = 1.7248
+# One known near-optimal design vector (Deb 1991)
+KNOWN_OPTIMUM_X: list[float] = [0.205986, 3.471328, 9.020224, 0.206480]
 
 
 # ---------------------------------------------------------------------------
