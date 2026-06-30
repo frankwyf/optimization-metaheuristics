@@ -58,7 +58,7 @@ jobs:
       - name: Install ruff
         run: pip install ruff
       - name: Lint with ruff
-        run: ruff check metaheuristics/ scripts/ --output-format=github
+        run: ruff check metaheuristics/ scripts/ tests/ --output-format=github
 
   cli-smoke:
     name: CLI smoke test
@@ -74,9 +74,11 @@ jobs:
       - name: List algorithms
         run: python scripts/run.py --list
       - name: SA quick run (no plot)
-        run: python scripts/run.py sa --seed 42 --runs 1 --samples-per-temperature 200 --no-plot
+        run: python scripts/run.py sa --seed 42 --runs 1 --no-plot --quick
       - name: PSO quick run (no plot)
-        run: python scripts/run.py pso --seed 42 --runs 1 --iterations 5 --no-plot
+        run: python scripts/run.py pso --seed 42 --runs 1 --no-plot --quick
       - name: GA quick run (no plot)
-        run: python scripts/run.py ga --seed 42 --runs 1 --max-iteration 5 --no-plot
+        run: python scripts/run.py ga --seed 42 --runs 1 --no-plot --quick
+      - name: DE quick run (no plot)
+        run: python scripts/run.py de --seed 42 --runs 1 --no-plot --quick
 

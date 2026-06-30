@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.0] — 2026-06-30
+
+### Added
+- **Differential Evolution (DE)** algorithm — `metaheuristics/algorithms/de.py`
+  implementing DE/rand/1/bin variant (Storn & Price 1997)
+- **Benchmarks module** — `metaheuristics/benchmarks.py` with standard test
+  functions: Sphere, Rastrigin, Ackley, Rosenbrock, Griewank, Schwefel
+- **Rewritten CLI** — `scripts/run.py` now uses the package directly with
+  tabulated results, multi-run statistics, and `--quick` mode
+- Tests for DE (13 tests), benchmarks (17 tests), and CLI (11 tests) — total 97
+- Release workflow (`.github/workflows/release.yml`) with PyPI publish
+- `KNOWN_OPTIMUM_X` vector added to `problem.py`
+
+### Changed
+- CI lint target now includes `tests/` directory
+- CLI smoke tests use `--quick` flag instead of algorithm-specific args
+- Version bumped to 1.2.0
+
+---
+
 ## [1.1.0] — 2026-06-30
 
 ### Added

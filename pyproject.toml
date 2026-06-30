@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "optimization-metaheuristics"
-version = "1.1.0"
-description = "Metaheuristic optimization algorithms (GA, PSO, SA) for the welded-beam engineering design benchmark"
+version = "1.2.0"
+description = "Metaheuristic optimization algorithms (GA, PSO, SA, DE) for the welded-beam engineering design benchmark"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
@@ -15,8 +15,10 @@ keywords = [
     "genetic-algorithm",
     "particle-swarm-optimization",
     "simulated-annealing",
+    "differential-evolution",
     "engineering-design",
     "welded-beam",
+    "benchmarks",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
