@@ -4,7 +4,7 @@
 """
 from __future__ import annotations
 
-import pytest
+import numpy as np
 
 from metaheuristics.algorithms.base import OptimisationResult
 from metaheuristics.algorithms.ga import GeneticAlgorithm, _Individual
@@ -83,7 +83,20 @@ class TestGASmoke:
     def test_reproducible_with_seed(self):
         r1 = GeneticAlgorithm(seed=55, pop_size=30).run(max_iteration=5, verbose=False)
         r2 = GeneticAlgorithm(seed=55, pop_size=30).run(max_iteration=5, verbose=False)
-        assert r1.best_cost == pytest.approx(r2.best_cost, rel=1e-6)
+        assert r1 == r2
+
+    def test_instances_are_independent_and_do_not_pollute_global_rng(self):
+        state = np.random.get_state()
+        expected = GeneticAlgorithm(seed=55, pop_size=24).run(max_iteration=5, verbose=False)
+        first = GeneticAlgorithm(seed=55, pop_size=24)
+        second = GeneticAlgorithm(seed=55, pop_size=24)
+        second.run(max_iteration=5, verbose=False)
+        actual = first.run(max_iteration=5, verbose=False)
+        actual_state = np.random.get_state()
+        assert actual == expected
+        assert actual_state[0] == state[0]
+        assert np.array_equal(actual_state[1], state[1])
+        assert actual_state[2:] == state[2:]
 
     def test_is_feasible_attribute_is_bool(self):
         ga = GeneticAlgorithm(seed=5, pop_size=30)

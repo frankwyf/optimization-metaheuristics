@@ -24,6 +24,8 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
+from metaheuristics.problems import OptimizationProblem
+
 # ---------------------------------------------------------------------------
 # Search-space bounds: [(lower, upper), ...]
 # ---------------------------------------------------------------------------
@@ -172,3 +174,15 @@ def penalized_objective(x: Sequence[float], penalty: float = 1e4) -> float:
     cost = objective(x)
     total_penalty = sum(max(0.0, v) for v in constraint_violations(x)) * penalty
     return cost + total_penalty
+
+
+# Generic optimizer default. Keep the canonical formulas above as the source
+# of truth so the reusable interface cannot drift from the engineering model.
+WELDED_BEAM_PROBLEM = OptimizationProblem(
+    name="welded-beam",
+    bounds=tuple(BOUNDS),
+    objective=objective,
+    constraint_violations=constraint_violations,
+    known_optimum=KNOWN_OPTIMUM,
+    known_optimum_x=tuple(KNOWN_OPTIMUM_X),
+)

@@ -4,7 +4,9 @@
 """
 from __future__ import annotations
 
-import pytest
+import random
+
+import numpy as np
 
 from metaheuristics.algorithms.base import OptimisationResult
 from metaheuristics.algorithms.pso import ParticleSwarmOptimization
@@ -37,7 +39,17 @@ class TestPSOSmoke:
     def test_reproducible_with_seed(self):
         r1 = ParticleSwarmOptimization(seed=77, pop=20).run(iterations=5)
         r2 = ParticleSwarmOptimization(seed=77, pop=20).run(iterations=5)
-        assert r1.best_cost == pytest.approx(r2.best_cost, rel=1e-6)
+        assert r1 == r2
+
+    def test_instances_are_independent_of_run_order(self):
+        expected = ParticleSwarmOptimization(seed=77, pop=20).run(iterations=5)
+        first = ParticleSwarmOptimization(seed=77, pop=20)
+        second = ParticleSwarmOptimization(seed=77, pop=20)
+
+        second.run(iterations=5)
+        actual = first.run(iterations=5)
+
+        assert actual == expected
 
     def test_is_feasible_attribute_is_bool(self):
         pso = ParticleSwarmOptimization(seed=5, pop=20)
@@ -73,3 +85,42 @@ class TestPSOHyperparams:
             assert history[i] <= history[i - 1] + 1e-9, (
                 f"Global best worsened at step {i}: {history[i-1]} → {history[i]}"
             )
+
+    def test_does_not_pollute_global_random_generators(self):
+        original_python_state = random.getstate()
+        original_numpy_state = np.random.get_state()
+
+        try:
+            random.seed(101)
+            np.random.seed(202)
+            python_state = random.getstate()
+            numpy_state = np.random.get_state()
+
+            pso = ParticleSwarmOptimization(seed=303, pop=20)
+
+            python_unchanged = random.getstate() == python_state
+            numpy_unchanged = _numpy_state_equal(np.random.get_state(), numpy_state)
+            assert python_unchanged and numpy_unchanged, (
+                f"after construction: Python unchanged={python_unchanged}, "
+                f"NumPy unchanged={numpy_unchanged}"
+            )
+
+            pso.run(iterations=5)
+
+            python_unchanged = random.getstate() == python_state
+            numpy_unchanged = _numpy_state_equal(np.random.get_state(), numpy_state)
+            assert python_unchanged and numpy_unchanged, (
+                f"after run: Python unchanged={python_unchanged}, "
+                f"NumPy unchanged={numpy_unchanged}"
+            )
+        finally:
+            random.setstate(original_python_state)
+            np.random.set_state(original_numpy_state)
+
+
+def _numpy_state_equal(actual: tuple, expected: tuple) -> bool:
+    return (
+        actual[0] == expected[0]
+        and np.array_equal(actual[1], expected[1])
+        and actual[2:] == expected[2:]
+    )

@@ -27,10 +27,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e .[dev]
+          pip install -e ".[dev]"
 
       - name: Compile all maintained sources
         run: python -m compileall general.py final scripts metaheuristics
+
+      - name: Build source and wheel distributions
+        run: python -m build
 
       - name: Run tests with coverage
         run: |
@@ -69,8 +72,7 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -e .
+          pip install -e ".[plot]"
       - name: List algorithms
         run: python scripts/run.py --list
       - name: SA quick run (no plot)
@@ -81,4 +83,39 @@ jobs:
         run: python scripts/run.py ga --seed 42 --runs 1 --no-plot --quick
       - name: DE quick run (no plot)
         run: python scripts/run.py de --seed 42 --runs 1 --no-plot --quick
+
+  portability:
+    name: Portability (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install core and test dependencies
+        run: |
+          python -m pip install -e ".[dev]"
+      - name: Run generic-problem and CLI tests without plotting extras
+        run: python -m pytest tests/test_problem_interface.py tests/test_cli.py -q
+      - name: Run a headless benchmark on the platform
+        run: python scripts/run.py de --problem sphere_2d --seed 42 --runs 1 --pop-size 8 --iterations 2 --no-plot
+
+  plotting:
+    name: Optional plotting smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install plotting extra
+        run: python -m pip install -e ".[plot]"
+      - name: Render headless convergence and statistics plots
+        env:
+          MPLBACKEND: Agg
+        run: python scripts/run.py de --problem sphere_2d --seed 42 --runs 1 --pop-size 8 --iterations 2 --output-dir "$RUNNER_TEMP/metaheuristics-plots"
 

@@ -14,16 +14,11 @@ Thank you for considering contributing to **optimization-metaheuristics**!
 
 ### Development Setup
 ```bash
-git clone https://github.com/frankwyf/optimization-metaheuristics.git
-cd optimization-metaheuristics
-python -m venv .venv
-# Windows
-.venv\Scripts\activate
-# Linux / macOS
+python3.12 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-pip install pytest pytest-cov ruff
+python -m pip install -e ".[dev,plot]"
 ```
+On macOS, verify the repository is on the intended external volume and set external cache and temporary paths as described in `DEVELOPMENT.md`. Windows users should activate `.venv\Scripts\Activate.ps1` before installing.
 
 ### Code Style
 - We use [ruff](https://github.com/astral-sh/ruff) for linting and formatting.
@@ -68,14 +63,11 @@ test: cover SA cooling-rate edge cases
 
 ### 开发环境搭建
 ```bash
-git clone https://github.com/frankwyf/optimization-metaheuristics.git
-cd optimization-metaheuristics
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-source .venv/bin/activate  # Linux/macOS
-pip install -r requirements.txt
-pip install pytest pytest-cov ruff
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev,plot]"
 ```
+macOS 用户应先确认仓库位于外置卷，并按 `DEVELOPMENT.md` 配置外置缓存和临时目录。Windows PowerShell 用户请先执行 `.venv\Scripts\Activate.ps1`。
 
 ### 代码风格
 - 使用 [ruff](https://github.com/astral-sh/ruff) 进行代码检查和格式化
@@ -110,14 +102,11 @@ python -m pytest tests/ -v
 
 ### 開発環境のセットアップ
 ```bash
-git clone https://github.com/frankwyf/optimization-metaheuristics.git
-cd optimization-metaheuristics
-python -m venv .venv
-.venv\Scripts\activate    # Windows
-source .venv/bin/activate  # Linux / macOS
-pip install -r requirements.txt
-pip install pytest pytest-cov ruff
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e ".[dev,plot]"
 ```
+macOS では、インストール前にリポジトリが外部ボリューム上にあることを確認し、`DEVELOPMENT.md` の外部キャッシュ設定を行ってください。Windows では `.venv\Scripts\Activate.ps1` を実行してからインストールします。
 
 ### コードスタイル
 - [ruff](https://github.com/astral-sh/ruff) を使用してリントとフォーマットを行います

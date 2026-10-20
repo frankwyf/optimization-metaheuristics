@@ -1,4 +1,4 @@
-"""Simulated Annealing (SA) optimiser for the welded-beam problem.
+"""Simulated Annealing (SA) optimizer for bounded minimization problems.
 
 Simulated Annealing is a probabilistic technique that escapes local optima by
 accepting worse solutions with a temperature-dependent probability that
@@ -19,7 +19,7 @@ import math
 import numpy as np
 
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
-from metaheuristics.problem import BOUNDS, is_feasible, objective, penalized_objective
+from metaheuristics.problems import OptimizationProblem
 
 # Default hyperparameters
 _T_MAX: float = 20.0   # Initial temperature
@@ -52,7 +52,9 @@ class SimulatedAnnealing(BaseOptimiser):
         t_max: float = _T_MAX,
         t_min: float = _T_MIN,
         cooling: float = _COOLING,
+        problem: OptimizationProblem | None = None,
     ) -> None:
+        super().__init__(problem=problem, seed=seed)
         self._rng = np.random.default_rng(seed)
         self.t_max = t_max
         self.t_min = t_min
@@ -63,7 +65,7 @@ class SimulatedAnnealing(BaseOptimiser):
     # ------------------------------------------------------------------
     def _random_point(self) -> list[float]:
         """Sample a uniformly random design vector within bounds."""
-        return [float(self._rng.uniform(lo, hi)) for lo, hi in BOUNDS]
+        return [float(self._rng.uniform(lo, hi)) for lo, hi in self.problem.bounds]
 
     def _neighbour(self) -> list[float]:
         """Generate a random candidate (uniform restart within bounds)."""
@@ -93,8 +95,10 @@ class SimulatedAnnealing(BaseOptimiser):
         -------
         OptimisationResult
         """
+        self._start_run()
         xs = self._random_point()
-        best_cost = penalized_objective(xs)
+        current_evaluation = self._evaluate(xs)
+        best_cost = current_evaluation.penalized_value
         best_x = xs[:]
 
         t = self.t_max
@@ -105,29 +109,30 @@ class SimulatedAnnealing(BaseOptimiser):
             count += 1
             for _ in range(samples_per_temperature):
                 candidate = self._neighbour()
-                current_cost = penalized_objective(candidate)
+                candidate_evaluation = self._evaluate(candidate)
+                current_cost = candidate_evaluation.penalized_value
                 delta = best_cost - current_cost
 
                 if delta >= 0:
                     # Better or equal — always accept
                     best_cost = current_cost
                     best_x = candidate[:]
+                    current_evaluation = candidate_evaluation
                 else:
                     # Worse — accept with Boltzmann probability
                     if math.exp(delta / t) > self._rng.random():
                         best_cost = current_cost
                         best_x = candidate[:]
+                        current_evaluation = candidate_evaluation
 
             t *= self.cooling
-            cost_history.append(objective(best_x) if is_feasible(best_x) else best_cost)
+            cost_history.append(
+                current_evaluation.objective_value
+                if current_evaluation.is_feasible
+                else best_cost
+            )
 
             if verbose:
                 print(f"[SA] T={t:.4f}  best={best_cost:.5f}")
 
-        feasible = is_feasible(best_x)
-        return OptimisationResult(
-            best_x=best_x,
-            best_cost=objective(best_x) if feasible else best_cost,
-            cost_history=cost_history,
-            is_feasible=feasible,
-        )
+        return self._make_result(best_x, current_evaluation, cost_history)

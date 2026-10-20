@@ -13,6 +13,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from metaheuristics.problems import OptimizationProblem
+
 
 @dataclass(frozen=True)
 class BenchmarkFunction:
@@ -177,3 +179,19 @@ BENCHMARKS: dict[str, dict] = {
         "optimal_x": [420.9687, 420.9687],
     },
 }
+
+
+def get_benchmark_problem(name: str) -> OptimizationProblem:
+    """Return a generic optimization problem adapted from the benchmark registry."""
+    try:
+        entry = BENCHMARKS[name]
+    except KeyError as exc:
+        choices = ", ".join(sorted(BENCHMARKS))
+        raise ValueError(f"Unknown benchmark {name!r}; choose from: {choices}") from exc
+    return OptimizationProblem(
+        name=entry["name"],
+        bounds=tuple(entry["bounds"]),
+        objective=entry["func"],
+        known_optimum=entry["global_minimum"],
+        known_optimum_x=tuple(entry["optimal_x"]),
+    )

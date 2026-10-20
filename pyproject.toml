@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "optimization-metaheuristics"
 version = "1.2.0"
-description = "Metaheuristic optimization algorithms (GA, PSO, SA, DE) for the welded-beam engineering design benchmark"
+description = "Reusable metaheuristic optimization algorithms and engineering benchmarks"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
@@ -32,9 +32,10 @@ classifiers = [
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = ["matplotlib>=3.7", "numpy>=1.24", "seaborn>=0.12"]
+dependencies = ["numpy>=1.24"]
 
 [project.optional-dependencies]
+plot = ["matplotlib>=3.7", "seaborn>=0.12"]
 dev = [
     "build>=1.2",
     "pre-commit>=3.7",

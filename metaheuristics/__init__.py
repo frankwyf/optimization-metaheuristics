@@ -1,8 +1,8 @@
 """
 optimization-metaheuristics
 ===========================
-Metaheuristic optimization algorithms (GA, PSO, SA, DE) benchmarked on the
-welded-beam engineering design problem.
+Reusable metaheuristic optimization algorithms (GA, PSO, SA, DE) with a
+welded-beam default and standard continuous optimization benchmarks.
 
 Quick start
 -----------
@@ -19,5 +19,6 @@ __author__ = "frankwyf"
 __license__ = "MIT"
 
 from metaheuristics import benchmarks, problem  # noqa: F401
+from metaheuristics.problems import OptimizationProblem
 
-__all__ = ["benchmarks", "problem", "__version__"]
+__all__ = ["OptimizationProblem", "benchmarks", "problem", "__version__"]

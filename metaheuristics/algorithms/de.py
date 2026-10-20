@@ -1,4 +1,4 @@
-"""Differential Evolution (DE) for the welded-beam problem.
+"""Differential Evolution (DE/rand/1/bin) for bounded minimization problems.
 
 DE is a population-based stochastic direct-search method that uses vector
 differences for perturbation (Storn & Price, 1997). The DE/rand/1/bin
@@ -18,7 +18,7 @@ from __future__ import annotations
 import numpy as np
 
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
-from metaheuristics.problem import BOUNDS, is_feasible, objective, penalized_objective
+from metaheuristics.problems import OptimizationProblem
 
 # Default hyperparameters
 _POP: int = 100
@@ -51,7 +51,9 @@ class DifferentialEvolution(BaseOptimiser):
         pop_size: int = _POP,
         f: float = _F,
         cr: float = _CR,
+        problem: OptimizationProblem | None = None,
     ) -> None:
+        super().__init__(problem=problem, seed=seed)
         self._rng = np.random.default_rng(seed)
         self.pop_size = max(pop_size, 4)
         self.f = f
@@ -62,8 +64,8 @@ class DifferentialEvolution(BaseOptimiser):
     # ------------------------------------------------------------------
     def _init_population(self) -> np.ndarray:
         """Initialise population uniformly within bounds."""
-        pop = np.zeros((self.pop_size, len(BOUNDS)))
-        for j, (lo, hi) in enumerate(BOUNDS):
+        pop = np.zeros((self.pop_size, self.problem.dimension))
+        for j, (lo, hi) in enumerate(self.problem.bounds):
             pop[:, j] = self._rng.uniform(lo, hi, size=self.pop_size)
         return pop
 
@@ -74,13 +76,13 @@ class DifferentialEvolution(BaseOptimiser):
         r1, r2, r3 = self._rng.choice(indices, size=3, replace=False)
         mutant = pop[r1] + self.f * (pop[r2] - pop[r3])
         # Clip to bounds
-        for j, (lo, hi) in enumerate(BOUNDS):
+        for j, (lo, hi) in enumerate(self.problem.bounds):
             mutant[j] = np.clip(mutant[j], lo, hi)
         return mutant
 
     def _crossover(self, target: np.ndarray, mutant: np.ndarray) -> np.ndarray:
         """Binomial crossover."""
-        d = len(BOUNDS)
+        d = self.problem.dimension
         trial = target.copy()
         j_rand = self._rng.integers(d)
         for j in range(d):
@@ -112,19 +114,23 @@ class DifferentialEvolution(BaseOptimiser):
         -------
         OptimisationResult
         """
+        self._start_run()
         pop = self._init_population()
-        fitness = np.array([penalized_objective(pop[i].tolist()) for i in range(self.pop_size)])
+        evaluations = [self._evaluate(pop[i].tolist()) for i in range(self.pop_size)]
+        fitness = np.array([evaluation.penalized_value for evaluation in evaluations])
 
         best_idx = int(np.argmin(fitness))
         best_x = pop[best_idx].copy()
         best_fit = fitness[best_idx]
+        best_evaluation = evaluations[best_idx]
         cost_history: list[float] = [float(best_fit)]
 
         for gen in range(max_iterations):
             for i in range(self.pop_size):
                 mutant = self._mutate(pop, i)
                 trial = self._crossover(pop[i], mutant)
-                trial_fit = penalized_objective(trial.tolist())
+                trial_evaluation = self._evaluate(trial.tolist())
+                trial_fit = trial_evaluation.penalized_value
 
                 # Greedy selection
                 if trial_fit <= fitness[i]:
@@ -134,16 +140,10 @@ class DifferentialEvolution(BaseOptimiser):
                     if trial_fit < best_fit:
                         best_x = trial.copy()
                         best_fit = trial_fit
+                        best_evaluation = trial_evaluation
 
             cost_history.append(float(best_fit))
             if verbose:
                 print(f"[DE] gen={gen + 1:4d}  best={best_fit:.5f}")
 
-        best_x_list = best_x.tolist()
-        feasible = is_feasible(best_x_list)
-        return OptimisationResult(
-            best_x=best_x_list,
-            best_cost=objective(best_x_list) if feasible else float(best_fit),
-            cost_history=cost_history,
-            is_feasible=feasible,
-        )
+        return self._make_result(best_x.tolist(), best_evaluation, cost_history)

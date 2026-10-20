@@ -49,6 +49,29 @@ class TestCLIMain:
         assert "Summary Statistics" in out
         assert "Best" in out
 
+    def test_pso_pop_size_option(self, capsys):
+        assert main(["pso", "--seed", "42", "--runs", "1", "--pop-size", "10", "--iterations", "1", "--no-plot"]) == 0
+        assert "Run  1:" in capsys.readouterr().out
+
+    def test_runs_must_be_positive(self):
+        with pytest.raises(SystemExit):
+            main(["pso", "--runs", "0", "--no-plot"])
+
+    def test_custom_problem_and_artifact_export(self, tmp_path, capsys):
+        import csv
+        import json
+
+        assert main([
+            "de", "--problem", "sphere_2d", "--seed", "42", "--runs", "2",
+            "--pop-size", "8", "--iterations", "2", "--no-plot", "--output-dir", str(tmp_path),
+        ]) == 0
+        output = capsys.readouterr().out
+        assert "Sphere (2D)" in output
+        payload = json.loads((tmp_path / "experiment_de_sphere_2d.json").read_text())
+        assert len(payload["runs"]) == 2
+        with (tmp_path / "experiment_de_sphere_2d.csv").open(newline="") as handle:
+            assert len(list(csv.DictReader(handle))) == 2
+
 
 class TestAlgorithmRegistry:
     def test_four_algorithms(self):

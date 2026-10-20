@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Added
+- Generic bounded `OptimizationProblem` interface for built-in and user-defined objectives
+- Benchmark selection and JSON/CSV experiment export in the CLI
+- Instance-isolated random number generation in GA
+
+### Changed
+- Algorithms now derive search dimensions and bounds from the selected problem
+- Plotting libraries are optional dependencies (`.[plot]`)
+- CI includes macOS and Windows portability smoke checks
+- PSO uses instance-local Python and NumPy random generators
+- GA uses an instance-local NumPy generator; CLI population-size routing is algorithm-aware
+
 ## [1.2.0] — 2026-06-30
 
 ### Added
