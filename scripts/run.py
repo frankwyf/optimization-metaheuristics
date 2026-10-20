@@ -270,7 +270,7 @@ def run_algorithm(algo_name: str, args: argparse.Namespace) -> None:
         ["Mean evaluations", f"{summary['mean_objective_evaluations']:.1f}"],
         ["Time (s)", f"{total_elapsed:.3f}"],
     ]
-    print(f"\n{'─' * 68}\n  Summary Statistics\n{'─' * 68}")
+    print(f"\n{'=' * 68}\n  Summary Statistics\n{'=' * 68}")
     print(_format_table(["Metric", "Value"], rows))
     if n_feasible and problem.known_optimum not in (None, 0.0):
         gap = (summary["best_feasible_objective"] - problem.known_optimum) / abs(problem.known_optimum) * 100
