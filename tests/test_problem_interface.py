@@ -72,6 +72,42 @@ class TestOptimizationProblem:
         with pytest.raises(ValueError):
             problem.evaluate([1.0, float("nan")])
 
+    def test_rejects_overflow_when_scaling_constraint_penalty(self):
+        problem = OptimizationProblem(
+            name="penalty-overflow",
+            bounds=((0.0, 1.0),),
+            objective=lambda x: 0.0,
+            constraint_violations=lambda x: (1e308,),
+            penalty=1e308,
+        )
+
+        with pytest.raises(ValueError, match="Constraint penalty must be finite"):
+            problem.evaluate([0.5])
+
+    def test_rejects_overflow_when_summing_constraint_violations(self):
+        problem = OptimizationProblem(
+            name="violation-sum-overflow",
+            bounds=((0.0, 1.0),),
+            objective=lambda x: 0.0,
+            constraint_violations=lambda x: (1e308, 1e308),
+            penalty=1.0,
+        )
+
+        with pytest.raises(ValueError, match="Constraint penalty must be finite"):
+            problem.evaluate([0.5])
+
+    def test_rejects_overflow_when_adding_penalty_to_objective(self):
+        problem = OptimizationProblem(
+            name="penalized-objective-overflow",
+            bounds=((0.0, 1.0),),
+            objective=lambda x: 1e308,
+            constraint_violations=lambda x: (1.0,),
+            penalty=1e308,
+        )
+
+        with pytest.raises(ValueError, match="Penalized objective value must be finite"):
+            problem.evaluate([0.5])
+
     def test_benchmark_adapter_preserves_metadata(self):
         problem = get_benchmark_problem("sphere_2d")
         result = problem.evaluate(problem.known_optimum_x)

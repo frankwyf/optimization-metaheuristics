@@ -105,10 +105,20 @@ class OptimizationProblem:
             raise ValueError("Objective value must be finite")
         violations = self.violations(point)
         feasible = all(violation <= 0.0 for violation in violations)
-        penalty = sum(max(0.0, violation) for violation in violations) * self.penalty
+        total_violation = 0.0
+        for violation in violations:
+            total_violation += max(0.0, violation)
+            if not math.isfinite(total_violation):
+                raise ValueError("Constraint penalty must be finite")
+        penalty = total_violation * self.penalty
+        if not math.isfinite(penalty):
+            raise ValueError("Constraint penalty must be finite")
+        penalized_value = value + penalty
+        if not math.isfinite(penalized_value):
+            raise ValueError("Penalized objective value must be finite")
         return ProblemEvaluation(
             objective_value=value,
-            penalized_value=value + penalty,
+            penalized_value=penalized_value,
             is_feasible=feasible,
             violations=violations,
         )
