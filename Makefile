@@ -1,4 +1,4 @@
-.PHONY: install dev test lint format clean run-all
+.PHONY: install dev test lint format clean run-all build release-check
 
 PYTHON := .venv/bin/python
 
@@ -21,7 +21,7 @@ test: check-venv
 
 ## Run ruff lint check
 lint: check-venv
-	$(PYTHON) -m ruff check metaheuristics/ scripts/ tests/ examples/
+	$(PYTHON) -m ruff check metaheuristics/ scripts/ tests/ examples/ tools/
 
 ## Auto-format and fix lint issues
 format: check-venv
@@ -38,4 +38,12 @@ run-all: check-venv
 ## Remove build artifacts
 clean:
 	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage coverage.xml
-	find . -type d -name __pycache__ -exec rm -rf {} +
+	find metaheuristics scripts tests examples tools final -type d -name __pycache__ -exec rm -rf {} +
+
+## Validate release metadata and build/check distributions
+release-check: check-venv
+	$(PYTHON) tools/check_release.py
+
+build: release-check
+	$(PYTHON) -m build
+	$(PYTHON) -m twine check --strict dist/*

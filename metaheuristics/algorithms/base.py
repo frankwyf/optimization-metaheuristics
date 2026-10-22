@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
+from metaheuristics._validation import require_int
 from metaheuristics.problem import WELDED_BEAM_PROBLEM
 from metaheuristics.problems import OptimizationProblem, ProblemEvaluation
 
@@ -51,6 +52,11 @@ class BaseOptimiser(ABC):
     """
 
     def __init__(self, problem: OptimizationProblem | None = None, seed: int | None = None) -> None:
+        if seed is not None:
+            require_int("seed", seed)
+            seed = int(seed)
+        if problem is not None and not isinstance(problem, OptimizationProblem):
+            raise TypeError("problem must be an OptimizationProblem or None")
         self.problem = problem if problem is not None else WELDED_BEAM_PROBLEM
         self.seed = seed
         self.n_evaluations = 0

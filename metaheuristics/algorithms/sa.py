@@ -18,6 +18,7 @@ import math
 
 import numpy as np
 
+from metaheuristics._validation import require_int, require_real
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
 from metaheuristics.problems import OptimizationProblem
 
@@ -55,7 +56,14 @@ class SimulatedAnnealing(BaseOptimiser):
         problem: OptimizationProblem | None = None,
     ) -> None:
         super().__init__(problem=problem, seed=seed)
-        self._rng = np.random.default_rng(seed)
+        require_real("t_max", t_max)
+        require_real("t_min", t_min)
+        require_real("cooling", cooling, 0.0, 1.0)
+        if not 0.0 < t_min < t_max:
+            raise ValueError("t_max must be greater than t_min > 0")
+        if not 0.0 < cooling < 1.0:
+            raise ValueError("cooling must be strictly between 0 and 1")
+        self._rng = np.random.default_rng(self.seed)
         self.t_max = t_max
         self.t_min = t_min
         self.cooling = cooling
@@ -95,44 +103,43 @@ class SimulatedAnnealing(BaseOptimiser):
         -------
         OptimisationResult
         """
+        require_int("samples_per_temperature", samples_per_temperature, 1)
         self._start_run()
         xs = self._random_point()
         current_evaluation = self._evaluate(xs)
-        best_cost = current_evaluation.penalized_value
+        best_evaluation = current_evaluation
+        best_cost = best_evaluation.penalized_value
         best_x = xs[:]
 
         t = self.t_max
-        cost_history: list[float] = []
-        count = 0
+        cost_history: list[float] = [best_cost]
 
         while t > self.t_min:
-            count += 1
             for _ in range(samples_per_temperature):
                 candidate = self._neighbour()
                 candidate_evaluation = self._evaluate(candidate)
                 current_cost = candidate_evaluation.penalized_value
-                delta = best_cost - current_cost
+                delta = current_evaluation.penalized_value - current_cost
 
                 if delta >= 0:
                     # Better or equal — always accept
-                    best_cost = current_cost
-                    best_x = candidate[:]
                     current_evaluation = candidate_evaluation
                 else:
                     # Worse — accept with Boltzmann probability
                     if math.exp(delta / t) > self._rng.random():
-                        best_cost = current_cost
-                        best_x = candidate[:]
                         current_evaluation = candidate_evaluation
+                if current_cost < best_cost:
+                    best_cost = current_cost
+                    best_x = candidate[:]
+                    best_evaluation = candidate_evaluation
 
-            t *= self.cooling
-            cost_history.append(
-                current_evaluation.objective_value
-                if current_evaluation.is_feasible
-                else best_cost
-            )
+            next_t = t * self.cooling
+            if next_t >= t:
+                raise ValueError("cooling does not decrease temperature at floating-point precision")
+            t = next_t
+            cost_history.append(best_cost)
 
             if verbose:
                 print(f"[SA] T={t:.4f}  best={best_cost:.5f}")
 
-        return self._make_result(best_x, current_evaluation, cost_history)
+        return self._make_result(best_x, best_evaluation, cost_history)

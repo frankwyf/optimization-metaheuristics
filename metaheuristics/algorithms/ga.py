@@ -20,6 +20,7 @@ from collections.abc import Callable
 
 import numpy as np
 
+from metaheuristics._validation import require_int, require_real
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
 from metaheuristics.problem import WELDED_BEAM_PROBLEM
 from metaheuristics.problems import OptimizationProblem, ProblemEvaluation
@@ -207,11 +208,16 @@ class GeneticAlgorithm(BaseOptimiser):
         problem: OptimizationProblem | None = None,
     ) -> None:
         super().__init__(problem=problem, seed=seed)
-        if pop_size < 2:
-            raise ValueError("pop_size must be at least 2")
+        require_int("pop_size", pop_size, 2)
+        require_int("stagnation_patience", stagnation_patience, 1)
+        require_real("crossover_prob", crossover_prob, 0.0, 1.0)
+        require_real("mutation_prob", mutation_prob, 0.0, 1.0)
+        require_real("elite_fraction", elite_fraction, 0.0, 1.0)
         if not 0.0 < elite_fraction <= 1.0 or int(pop_size * elite_fraction) < 1:
             raise ValueError("elite_fraction must select at least one individual")
-        self._rng = np.random.default_rng(seed)
+        if not callable(history_transform):
+            raise TypeError("history_transform must be callable")
+        self._rng = np.random.default_rng(self.seed)
         self.pop_size = pop_size
         self.crossover_prob = crossover_prob
         self.mutation_prob = mutation_prob
@@ -285,6 +291,7 @@ class GeneticAlgorithm(BaseOptimiser):
         -------
         OptimisationResult
         """
+        require_int("max_iteration", max_iteration)
         self._start_run()
         # Initialise population
         population: list[_Individual] = []
@@ -297,11 +304,9 @@ class GeneticAlgorithm(BaseOptimiser):
         best = copy.deepcopy(population[0])
         patience_left = self.stagnation_patience
         stagnant_gens = 0
-        cost_history: list[float] = []
+        cost_history: list[float] = [self.history_transform(best.fitness(self.problem, self._evaluate))]
 
         for gen in range(max_iteration):
-            cost_history.append(self.history_transform(best.fitness(self.problem, self._evaluate)))
-
             # Early-stop / diversify
             if patience_left < 0:
                 best_fitness = best.fitness(self.problem, self._evaluate)
@@ -329,6 +334,8 @@ class GeneticAlgorithm(BaseOptimiser):
                 stagnant_gens = 0
 
             fitnesses = [ind.fitness(self.problem, self._evaluate) for ind in population]
+            population = self._selection(population, fitnesses)
+            fitnesses = [ind.fitness(self.problem, self._evaluate) for ind in population]
             best_idx = int(np.argmin(fitnesses))
 
             if fitnesses[best_idx] < best.fitness(self.problem, self._evaluate):
@@ -338,8 +345,8 @@ class GeneticAlgorithm(BaseOptimiser):
             else:
                 stagnant_gens += 1
 
-            population = self._selection(population, fitnesses)
             patience_left -= 1
+            cost_history.append(self.history_transform(best.fitness(self.problem, self._evaluate)))
 
             if verbose and gen % 50 == 0:
                 print(

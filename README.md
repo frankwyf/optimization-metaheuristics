@@ -7,6 +7,14 @@
 Metaheuristic optimization algorithms (GA · PSO · SA · DE) benchmarked on the
 **welded-beam constrained engineering design problem** (Deb 1991).
 
+**1.3.0:** reusable bounded problems, explicit multi-seed experiments, optional
+plots, and verified distribution builds. Research/education beta.
+[API reference](docs/API.md) · [Experiment and replay guide](docs/EXPERIMENTS.md) ·
+[Release notes](docs/releases/1.3.0.md) · [Roadmap](ROADMAP.md)
+
+中文：本版本补齐可重放实验、最佳解语义、参数校验及发行包验证；项目仍处于研究用途的 Beta 阶段。
+日本語：再現可能な実験、最良解の保持、入力検証、配布物の検証を整備した研究用ベータ版です。
+
 ---
 
 **[English](#english) · [中文](#中文) · [日本語](#日本語)**
@@ -127,7 +135,7 @@ optimization-metaheuristics/
 ### Testing
 
 ```bash
-pip install pytest pytest-cov
+python -m pip install -e ".[dev]"
 python -m pytest tests/ -v --cov=metaheuristics
 ```
 

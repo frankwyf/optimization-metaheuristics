@@ -43,6 +43,8 @@ class OptimizationProblem:
             raise ValueError("Problem must define at least one dimension")
         if any(not math.isfinite(lo) or not math.isfinite(hi) or lo >= hi for lo, hi in normalized_bounds):
             raise ValueError("Each bound must contain finite values with lower < upper")
+        if any(not math.isfinite(hi - lo) for lo, hi in normalized_bounds):
+            raise ValueError("Each bound span must be finite")
         if not callable(self.objective):
             raise TypeError("objective must be callable")
         if self.constraint_violations is not None and not callable(self.constraint_violations):

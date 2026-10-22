@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from metaheuristics._validation import require_int, require_real
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
 from metaheuristics.problems import OptimizationProblem
 
@@ -54,7 +55,10 @@ class DifferentialEvolution(BaseOptimiser):
         problem: OptimizationProblem | None = None,
     ) -> None:
         super().__init__(problem=problem, seed=seed)
-        self._rng = np.random.default_rng(seed)
+        require_int("pop_size", pop_size, 1)
+        require_real("f", f, 0.0, 2.0)
+        require_real("cr", cr, 0.0, 1.0)
+        self._rng = np.random.default_rng(self.seed)
         self.pop_size = max(pop_size, 4)
         self.f = f
         self.cr = cr
@@ -114,6 +118,7 @@ class DifferentialEvolution(BaseOptimiser):
         -------
         OptimisationResult
         """
+        require_int("max_iterations", max_iterations)
         self._start_run()
         pop = self._init_population()
         evaluations = [self._evaluate(pop[i].tolist()) for i in range(self.pop_size)]

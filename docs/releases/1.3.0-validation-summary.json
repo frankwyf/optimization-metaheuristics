@@ -1,0 +1,279 @@
+{
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "std_ddof": 0,
+  "baseline_commit": "392fb5f8661e374d3b7644e4813299e7bffe7753",
+  "environment": {
+    "python": "3.12.9 (v3.12.9:fdb81425a9a, Feb  4 2025, 12:21:36) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "numpy": "2.5.4",
+    "platform": "macOS-27.0.1-arm64-arm-64bit"
+  },
+  "reports": [
+    {
+      "problem": "Sphere (2D)",
+      "algorithm": "ga",
+      "constructor": {
+        "pop_size": 16
+      },
+      "run_options": {
+        "max_iteration": 20,
+        "verbose": false
+      },
+      "before": {
+        "mean": 0.028348148455606445,
+        "std": 0.035791594932690074,
+        "feasibility_rate": 1.0,
+        "best_objective": 0.0006041547097030569,
+        "mean_runtime_seconds": 0.010300697945058345,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 0.028348148455606445,
+        "nonmonotone_histories": 0
+      },
+      "after": {
+        "mean": 0.02759678185633359,
+        "std": 0.03621404630033226,
+        "feasibility_rate": 1.0,
+        "best_objective": 0.0006041547097030569,
+        "mean_runtime_seconds": 0.010350306215696038,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 0.02759678185633359,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "Sphere (2D)",
+      "algorithm": "pso",
+      "constructor": {
+        "pop": 16
+      },
+      "run_options": {
+        "iterations": 20
+      },
+      "before": {
+        "mean": 5.459756986372403e-06,
+        "std": 4.87381806601811e-06,
+        "feasibility_rate": 1.0,
+        "best_objective": 1.959058194713203e-07,
+        "mean_runtime_seconds": 0.0014130708528682589,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 5.459756986372403e-06,
+        "nonmonotone_histories": 0
+      },
+      "after": {
+        "mean": 5.459756986372403e-06,
+        "std": 4.87381806601811e-06,
+        "feasibility_rate": 1.0,
+        "best_objective": 1.959058194713203e-07,
+        "mean_runtime_seconds": 0.0014123147120699286,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 5.459756986372403e-06,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "Sphere (2D)",
+      "algorithm": "de",
+      "constructor": {
+        "pop_size": 16
+      },
+      "run_options": {
+        "max_iterations": 20
+      },
+      "before": {
+        "mean": 0.0002952100901302624,
+        "std": 0.0006002473309746887,
+        "feasibility_rate": 1.0,
+        "best_objective": 2.085597851945582e-05,
+        "mean_runtime_seconds": 0.004000268853269517,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 0.0002952100901302624,
+        "nonmonotone_histories": 0
+      },
+      "after": {
+        "mean": 0.0002952100901302624,
+        "std": 0.0006002473309746887,
+        "feasibility_rate": 1.0,
+        "best_objective": 2.085597851945582e-05,
+        "mean_runtime_seconds": 0.003986527025699615,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 0.0002952100901302624,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "Sphere (2D)",
+      "algorithm": "sa",
+      "constructor": {
+        "t_max": 2.0,
+        "t_min": 0.5,
+        "cooling": 0.5
+      },
+      "run_options": {
+        "samples_per_temperature": 100
+      },
+      "before": {
+        "mean": 1.3029331096654198,
+        "std": 0.8849459321991318,
+        "feasibility_rate": 1.0,
+        "best_objective": 0.24021922989522365,
+        "mean_runtime_seconds": 0.0009947750251740218,
+        "mean_evaluations": 201,
+        "mean_final_penalized_value": 1.3029331096654198,
+        "nonmonotone_histories": 9
+      },
+      "after": {
+        "mean": 0.13585660610432806,
+        "std": 0.20687152993965496,
+        "feasibility_rate": 1.0,
+        "best_objective": 0.004745189516921426,
+        "mean_runtime_seconds": 0.001017422857694328,
+        "mean_evaluations": 201,
+        "mean_final_penalized_value": 0.13585660610432806,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "welded-beam",
+      "algorithm": "ga",
+      "constructor": {
+        "pop_size": 16
+      },
+      "run_options": {
+        "max_iteration": 20,
+        "verbose": false
+      },
+      "before": {
+        "mean": 3.539683913518787,
+        "std": 0.6628190423881383,
+        "feasibility_rate": 0.8,
+        "best_objective": 2.353280198033254,
+        "mean_runtime_seconds": 0.017222970898728818,
+        "mean_evaluations": 318.6,
+        "mean_final_penalized_value": 356.67590528611214,
+        "nonmonotone_histories": 0
+      },
+      "after": {
+        "mean": 3.539683913518787,
+        "std": 0.6628190423881383,
+        "feasibility_rate": 0.8,
+        "best_objective": 2.353280198033254,
+        "mean_runtime_seconds": 0.017366614565253256,
+        "mean_evaluations": 318.6,
+        "mean_final_penalized_value": 356.67590528611214,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "welded-beam",
+      "algorithm": "pso",
+      "constructor": {
+        "pop": 16
+      },
+      "run_options": {
+        "iterations": 20
+      },
+      "before": {
+        "mean": 2.009890345886866,
+        "std": 0.3122462321530827,
+        "feasibility_rate": 1.0,
+        "best_objective": 1.7404087673070139,
+        "mean_runtime_seconds": 0.007197539682965726,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 2.009890345886866,
+        "nonmonotone_histories": 0
+      },
+      "after": {
+        "mean": 2.009890345886866,
+        "std": 0.3122462321530827,
+        "feasibility_rate": 1.0,
+        "best_objective": 1.7404087673070139,
+        "mean_runtime_seconds": 0.007173331314697861,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 2.009890345886866,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "welded-beam",
+      "algorithm": "de",
+      "constructor": {
+        "pop_size": 16
+      },
+      "run_options": {
+        "max_iterations": 20
+      },
+      "before": {
+        "mean": 2.5807735849306996,
+        "std": 0.6847172311667084,
+        "feasibility_rate": 1.0,
+        "best_objective": 1.8574893298430115,
+        "mean_runtime_seconds": 0.005259604321327061,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 2.5807735849306996,
+        "nonmonotone_histories": 0
+      },
+      "after": {
+        "mean": 2.5807735849306996,
+        "std": 0.6847172311667084,
+        "feasibility_rate": 1.0,
+        "best_objective": 1.8574893298430115,
+        "mean_runtime_seconds": 0.005289137584622949,
+        "mean_evaluations": 336,
+        "mean_final_penalized_value": 2.5807735849306996,
+        "nonmonotone_histories": 0
+      }
+    },
+    {
+      "problem": "welded-beam",
+      "algorithm": "sa",
+      "constructor": {
+        "t_max": 2.0,
+        "t_min": 0.5,
+        "cooling": 0.5
+      },
+      "run_options": {
+        "samples_per_temperature": 100
+      },
+      "before": {
+        "mean": 4.068950874320842,
+        "std": 0.5607124584701135,
+        "feasibility_rate": 0.8,
+        "best_objective": 2.7549677796840295,
+        "mean_runtime_seconds": 0.0015606166562065482,
+        "mean_evaluations": 201,
+        "mean_final_penalized_value": 253.67026923314216,
+        "nonmonotone_histories": 2
+      },
+      "after": {
+        "mean": 3.94843701611245,
+        "std": 0.5807906779266281,
+        "feasibility_rate": 0.8,
+        "best_objective": 2.7549677796840295,
+        "mean_runtime_seconds": 0.0015379645745269954,
+        "mean_evaluations": 201,
+        "mean_final_penalized_value": 253.57385814657545,
+        "nonmonotone_histories": 0
+      }
+    }
+  ]
+}

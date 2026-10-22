@@ -69,8 +69,40 @@ metaheuristics/
 ## Release Process / 发布流程 / リリースプロセス
 
 ```bash
-# Bump version in pyproject.toml + metaheuristics/__init__.py
-# Update CHANGELOG.md
-git tag v1.x.0
-git push origin v1.x.0  # triggers release workflow → GitHub Release + PyPI
+# Change the sole version in metaheuristics/__init__.py; update CITATION.cff,
+# CHANGELOG.md, and docs/releases/<version>.md in a reviewed PR.
+make release-check lint test build
+# Merge only after CI and the maintainer review required by CONTRIBUTING.md.
+# Tag the merged master commit; never tag an unmerged feature branch.
+git tag -a v1.x.0 <merged-commit> -m "Release 1.x.0"
+git push origin v1.x.0
 ```
+
+The tag workflow validates version and master ancestry, repeats the entire CI
+suite, builds from the source archive, checks metadata with Twine, and runs the
+installed wheel with isolated imports. The GitHub Release contains versioned
+notes, the wheel, sdist, and SHA-256 manifest. Inspect every release job before
+announcing publication. GitHub publication and PyPI publication are separate outcomes.
+
+For PyPI, configure a Trusted Publisher (or pending publisher for the first upload)
+with owner `frankwyf`, repository `optimization-metaheuristics`, workflow
+`release.yml`, and environment `pypi`. OIDC grants `id-token: write` only to the
+publishing job. No long-lived upload token is needed. Setup follows the
+[PyPI Trusted Publishing guide](https://docs.pypi.org/trusted-publishers/using-a-publisher/).
+Account login/2FA or environment approval must be completed by an authorized owner.
+Do not suppress an upload failure with `skip-existing` or move a published tag.
+After fixing an upload-only issue, re-run the failed publishing job; a code change
+requires a new patch version and tag.
+
+`workflow_dispatch` is available for recovery, but must be run against an existing
+version tag; branch dispatches fail validation. A prior GitHub Release must not be
+overwritten by re-running all jobs.
+
+## Numerical review and compatibility
+
+See [API.md](docs/API.md), [EXPERIMENTS.md](docs/EXPERIMENTS.md), and
+[ROADMAP.md](ROADMAP.md). Python 3.10–3.14, NumPy 1.24 on Python 3.10, latest
+compatible NumPy, macOS and Windows are exercised by CI. Local verification should
+report the actual tested interpreter; a matrix definition is not a passing result.
+The legacy `final/` and `legacy/` scripts are historical compatibility examples;
+new code and published installs use the package and unified CLI.

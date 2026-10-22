@@ -18,6 +18,7 @@ import random as _random
 
 import numpy as np
 
+from metaheuristics._validation import require_int, require_real
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
 from metaheuristics.problems import OptimizationProblem, ProblemEvaluation
 
@@ -74,8 +75,11 @@ class ParticleSwarmOptimization(BaseOptimiser):
         problem: OptimizationProblem | None = None,
     ) -> None:
         super().__init__(problem=problem, seed=seed)
-        self._rng = _random.Random(seed)
-        self._np_rng = np.random.default_rng(seed)
+        require_int("pop", pop, 1)
+        for name, value in (("w", w), ("c1", c1), ("c2", c2)):
+            require_real(name, value)
+        self._rng = _random.Random(self.seed)
+        self._np_rng = np.random.default_rng(self.seed)
         self.pop = pop
         self.w = w
         self.c1 = c1
@@ -148,6 +152,7 @@ class ParticleSwarmOptimization(BaseOptimiser):
         -------
         OptimisationResult
         """
+        require_int("iterations", iterations)
         self._start_run()
         positions, velocities = self._init_swarm()
 
