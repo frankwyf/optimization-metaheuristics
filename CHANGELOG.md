@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+## [1.3.0] — 2026-10-22
+
+### Added
+- Public multi-seed experiment API with complete run retention, stable statistics,
+  actual seed plans, environment metadata, and JSON/CSV schema v2
+- `python -m metaheuristics` and CLI version reporting
+- Regression tests for best-so-far semantics, parameter validation, replay, and release metadata
+- Installed-wheel, minimum-NumPy, Python 3.13/3.14, and full macOS/Windows CI checks
+- Release guards for matching tags and merged commits, verified assets, and SHA-256 checksums
+- API reference, experiment methodology, migration notes, and prioritized maturity roadmap
+- Generic bounded `OptimizationProblem` interface for built-in and user-defined objectives
+- Benchmark selection and JSON/CSV experiment export in the CLI
+- Instance-isolated random number generation in GA
+
+### Changed
+- Package version now comes from `metaheuristics.__version__`; citation metadata matches
+- GA/SA histories include initialization and completed updates
+- CLI rejects unsupported options and reports plotting/output failures clearly
+- Algorithms now derive search dimensions and bounds from the selected problem
+- Plotting libraries are optional dependencies (`.[plot]`)
+- CI includes macOS and Windows portability smoke checks
+- PSO uses instance-local Python and NumPy random generators
+- GA uses an instance-local NumPy generator; CLI population-size routing is algorithm-aware
+
+### Fixed
+- SA retains the best evaluated solution after accepting worse states
+- GA includes improvements created in its last generation
+- Non-finite penalized objective arithmetic and bound spans fail at the evaluation boundary
+- Invalid optimizer parameters fail immediately instead of hanging or being ignored
+- Statistical means of large finite objective values no longer overflow through NumPy summation
+
 ## [1.2.0] — 2026-06-30
 
 ### Added

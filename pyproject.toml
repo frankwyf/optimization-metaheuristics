@@ -1,13 +1,14 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "optimization-metaheuristics"
-version = "1.2.0"
-description = "Metaheuristic optimization algorithms (GA, PSO, SA, DE) for the welded-beam engineering design benchmark"
+dynamic = ["version"]
+description = "Reusable metaheuristic optimization algorithms and engineering benchmarks"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 keywords = [
     "metaheuristics",
@@ -23,24 +24,27 @@ keywords = [
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-dependencies = ["matplotlib>=3.7", "numpy>=1.24", "seaborn>=0.12"]
+dependencies = ["numpy>=1.24"]
 
 [project.optional-dependencies]
+plot = ["matplotlib>=3.7", "seaborn>=0.12"]
 dev = [
     "build>=1.2",
     "pre-commit>=3.7",
     "pytest>=7.4",
     "pytest-cov>=4.1",
     "ruff>=0.4",
+    "twine>=6",
 ]
 
 [project.scripts]
@@ -51,6 +55,10 @@ Homepage = "https://github.com/frankwyf/optimization-metaheuristics"
 Repository = "https://github.com/frankwyf/optimization-metaheuristics"
 "Bug Tracker" = "https://github.com/frankwyf/optimization-metaheuristics/issues"
 Changelog = "https://github.com/frankwyf/optimization-metaheuristics/blob/master/CHANGELOG.md"
+Documentation = "https://github.com/frankwyf/optimization-metaheuristics/blob/master/docs/API.md"
+
+[tool.setuptools.dynamic]
+version = { attr = "metaheuristics.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -73,7 +81,7 @@ testpaths = ["tests"]
 addopts = "-v --tb=short"
 
 [tool.coverage.run]
-source = ["metaheuristics"]
+source = ["metaheuristics", "scripts"]
 omit = ["tests/*", "legacy/*", "final/*"]
 
 [tool.coverage.report]

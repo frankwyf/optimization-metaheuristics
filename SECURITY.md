@@ -12,9 +12,10 @@
 ### Scope
 
 This project is a **research / educational** numerical optimisation library.
-It does not handle user authentication, network connections, file-system
-access outside the repository, or any sensitive user data.  The primary
-security concern is dependency vulnerabilities.
+It does not provide user authentication or a network service. The CLI writes
+experiment files to the user-selected output directory. Objective and constraint
+callbacks execute trusted Python code and must not be treated as sandboxed input.
+Security concerns include dependency vulnerabilities and unsafe use of callbacks.
 
 ### Reporting a Vulnerability
 
@@ -54,8 +55,9 @@ pip-audit
 
 ### 范围
 
-本项目是一个**研究/教育用途**的数值优化库。它不处理用户身份验证、网络连接、
-仓库外的文件系统访问或任何敏感用户数据。主要的安全关注点是依赖项漏洞。
+本项目是一个**研究/教育用途**的数值优化库，不提供身份验证或网络服务。
+CLI 会向用户指定的目录写入实验文件。目标函数和约束回调执行受信任的 Python 代码，
+不具备沙箱隔离；应关注依赖漏洞和不安全回调的使用。
 
 ### 报告漏洞
 
@@ -83,9 +85,9 @@ pip-audit
 ### スコープ
 
 本プロジェクトは**研究・教育目的**の数値最適化ライブラリです。
-ユーザー認証、ネットワーク接続、リポジトリ外のファイルシステムアクセス、
-または機密ユーザーデータを扱いません。
-主なセキュリティ上の懸念は依存関係の脆弱性です。
+認証やネットワークサービスは提供しません。CLI は指定された出力先に実験ファイルを書き込みます。
+目的関数と制約のコールバックは信頼された Python コードとして実行され、サンドボックス化されません。
+依存関係の脆弱性や安全でないコールバックの利用に注意が必要です。
 
 ### 脆弱性の報告
 

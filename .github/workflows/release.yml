@@ -3,66 +3,99 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Validate release tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Require a matching version tag on merged master history
+        env:
+          RELEASE_REF_TYPE: ${{ github.ref_type }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          test "$RELEASE_REF_TYPE" = tag
+          python tools/check_release.py --tag "$RELEASE_TAG"
+          git fetch origin master
+          git merge-base --is-ancestor HEAD origin/master
+
+  ci:
+    name: Release CI
+    needs: validate
+    uses: ./.github/workflows/ci.yml
+
   build:
-    name: Build distribution
+    name: Build verified distributions
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install build tools
-        run: pip install build
-
-      - name: Build sdist and wheel
-        run: python -m build
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - run: python -m pip install build twine
+      - name: Build and validate sdist and wheel
+        run: |
+          python -m build
+          python -m twine check --strict dist/*
+          python -m pip install dist/*.whl
+          python -I tools/smoke_wheel.py
+          sha256sum dist/* > dist/SHA256SUMS
+      - uses: actions/upload-artifact@v4
         with:
-          name: dist
+          name: release-dist
           path: dist/
 
   github-release:
-    name: Create GitHub Release
+    name: Publish GitHub Release
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: release-dist
           path: dist/
-
-      - name: Create release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: dist/*
-          generate_release_notes: true
+      - name: Publish versioned release notes and assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version="${RELEASE_TAG#v}"
+          gh release create "$RELEASE_TAG" dist/* --verify-tag --title "$RELEASE_TAG" --notes-file "docs/releases/$version.md"
 
   publish-pypi:
-    name: Publish to PyPI
-    needs: build
+    name: Publish to PyPI (Trusted Publisher)
+    needs: [build, github-release]
     runs-on: ubuntu-latest
-    environment: pypi
+    environment:
+      name: pypi
+      url: https://pypi.org/p/optimization-metaheuristics
     permissions:
+      contents: read
       id-token: write
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: dist
+          name: release-dist
           path: dist/
-
-      - name: Publish to PyPI
+      - name: Keep checksum manifest out of package upload
+        run: mv dist/SHA256SUMS SHA256SUMS
+      - name: Publish via OIDC with provenance attestations
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          skip-existing: true

@@ -7,6 +7,14 @@
 Metaheuristic optimization algorithms (GA · PSO · SA · DE) benchmarked on the
 **welded-beam constrained engineering design problem** (Deb 1991).
 
+**1.3.0:** reusable bounded problems, explicit multi-seed experiments, optional
+plots, and verified distribution builds. Research/education beta.
+[API reference](docs/API.md) · [Experiment and replay guide](docs/EXPERIMENTS.md) ·
+[Release notes](docs/releases/1.3.0.md) · [Roadmap](ROADMAP.md)
+
+中文：本版本补齐可重放实验、最佳解语义、参数校验及发行包验证；项目仍处于研究用途的 Beta 阶段。
+日本語：再現可能な実験、最良解の保持、入力検証、配布物の検証を整備した研究用ベータ版です。
+
 ---
 
 **[English](#english) · [中文](#中文) · [日本語](#日本語)**
@@ -17,8 +25,9 @@ Metaheuristic optimization algorithms (GA · PSO · SA · DE) benchmarked on the
 
 ### Overview
 
-This repository provides clean, testable Python implementations of four
-classic metaheuristic algorithms applied to a well-known engineering benchmark:
+This repository provides four testable metaheuristic algorithms. They run on
+the welded-beam engineering benchmark by default and accept reusable bounded
+optimization problems, including the standard functions in `benchmarks.py`:
 
 | Algorithm | Module | Description |
 |-----------|--------|-------------|
@@ -27,9 +36,10 @@ classic metaheuristic algorithms applied to a well-known engineering benchmark:
 | Simulated Annealing | `metaheuristics/algorithms/sa.py` | Geometric cooling schedule |
 | Differential Evolution | `metaheuristics/algorithms/de.py` | DE/rand/1/bin variant (Storn & Price 1997) |
 
-A **benchmarks module** (`metaheuristics/benchmarks.py`) provides standard test
-functions (Sphere, Rastrigin, Ackley, Rosenbrock, Griewank, Schwefel) for
-cross-algorithm comparison.
+A **benchmarks module** (`metaheuristics/benchmarks.py`) provides Sphere,
+Rastrigin, Ackley, Rosenbrock, Griewank, and Schwefel problems for comparison.
+The CLI can save run records and summaries as JSON and CSV when `--output-dir`
+is specified. Core installation requires NumPy; install `.[plot]` for figures.
 
 ### Benchmark Problem
 
@@ -49,10 +59,12 @@ Known near-optimal cost: **≈ 1.7248** (Deb 1991)
 ```bash
 git clone https://github.com/frankwyf/optimization-metaheuristics.git
 cd optimization-metaheuristics
-python -m venv .venv && .venv\Scripts\activate   # Windows
-# source .venv/bin/activate                      # Linux/macOS
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
+
+On Windows, use `python -m venv .venv` and activate `.venv\Scripts\activate` before installing dependencies.
 
 **Run via the unified CLI:**
 ```bash
@@ -61,6 +73,8 @@ python scripts/run.py pso --seed 42 --runs 3 --no-plot --quick
 python scripts/run.py ga  --seed 42 --runs 3 --no-plot --quick
 python scripts/run.py de  --seed 42 --runs 3 --no-plot --quick
 python scripts/run.py --list   # list all supported algorithms
+python scripts/run.py de --problem sphere_2d --seed 42 --runs 20 --no-plot \
+  --pop-size 40 --iterations 500 --output-dir ./results
 ```
 
 **Use the package directly:**
@@ -74,12 +88,34 @@ print(f"cost={result.best_cost:.5f}  feasible={result.is_feasible}")
 print(f"x = {result.best_x}")
 ```
 
+**Define a custom problem:**
+```python
+from metaheuristics.algorithms import DifferentialEvolution
+from metaheuristics.problems import OptimizationProblem
+
+problem = OptimizationProblem(
+    name="my-sphere",
+    bounds=((-5.0, 5.0),) * 3,
+    objective=lambda x: sum(value**2 for value in x),
+    known_optimum=0.0,
+    known_optimum_x=(0.0, 0.0, 0.0),
+)
+result = DifferentialEvolution(problem=problem, seed=42, pop_size=40).run(max_iterations=100)
+print(result.objective_value, result.is_feasible, result.n_evaluations)
+```
+
+`objective_value` always reports the raw objective. `penalized_cost` reports the
+search value including constraint penalties; `best_cost` retains its legacy
+meaning for compatibility. Result files record seeds, algorithm settings,
+problem bounds, evaluation counts, runtime, and available library versions.
+
 ### Repository Layout
 
 ```
 optimization-metaheuristics/
 ├── metaheuristics/          # Main installable package
 │   ├── problem.py           # Welded-beam problem (canonical)
+│   ├── problems.py          # Generic bounded problem interface
 │   ├── benchmarks.py        # Standard test functions (Sphere, Rastrigin, etc.)
 │   ├── algorithms/
 │   │   ├── base.py          # BaseOptimiser + OptimisationResult
@@ -89,7 +125,7 @@ optimization-metaheuristics/
 │   │   └── de.py            # Differential Evolution
 │   └── utils/
 │       └── visualization.py # Convergence-curve & box-plot helpers
-├── tests/                   # pytest test suite (97 tests)
+├── tests/                   # pytest test suite
 ├── scripts/run.py           # Unified CLI entry point
 ├── final/                   # Standalone scripts (backward compat)
 ├── legacy/                  # Archived exploratory code
@@ -99,7 +135,7 @@ optimization-metaheuristics/
 ### Testing
 
 ```bash
-pip install pytest pytest-cov
+python -m pip install -e ".[dev]"
 python -m pytest tests/ -v --cov=metaheuristics
 ```
 
@@ -152,9 +188,12 @@ See [CITATION.cff](CITATION.cff) for full metadata.
 ```bash
 git clone https://github.com/frankwyf/optimization-metaheuristics.git
 cd optimization-metaheuristics
-python -m venv .venv && .venv\Scripts\activate
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
+
+Windows PowerShell 用户可运行 `python -m venv .venv` 创建环境，再运行 `.venv\Scripts\Activate.ps1` 激活。
 
 **使用统一命令行界面：**
 ```bash
@@ -162,7 +201,12 @@ python scripts/run.py sa --seed 42 --runs 3 --no-plot --quick
 python scripts/run.py pso --seed 42 --runs 3 --no-plot --quick
 python scripts/run.py ga --seed 42 --runs 3 --no-plot --quick
 python scripts/run.py de --seed 42 --runs 3 --no-plot --quick
+python scripts/run.py de --problem sphere_2d --seed 42 --runs 20 --no-plot \
+  --pop-size 40 --iterations 500 --output-dir ./results
 ```
+
+`--output-dir` 会保存 JSON/CSV 逐次运行记录与汇总数据。核心安装只需 NumPy；
+需要图表时安装 `pip install -e ".[plot]"`。
 
 **直接使用包：**
 ```python
@@ -171,6 +215,22 @@ from metaheuristics.algorithms.sa import SimulatedAnnealing
 sa = SimulatedAnnealing(seed=42)
 result = sa.run(samples_per_temperature=20_000)
 print(f"cost={result.best_cost:.5f}  可行={result.is_feasible}")
+```
+
+**自定义目标函数：**
+```python
+from metaheuristics.algorithms import DifferentialEvolution
+from metaheuristics.problems import OptimizationProblem
+
+problem = OptimizationProblem(
+    name="my-sphere",
+    bounds=((-5.0, 5.0),) * 3,
+    objective=lambda x: sum(value**2 for value in x),
+    known_optimum=0.0,
+    known_optimum_x=(0.0, 0.0, 0.0),
+)
+result = DifferentialEvolution(problem=problem, seed=42, pop_size=40).run(max_iterations=100)
+print(result.objective_value, result.is_feasible, result.n_evaluations)
 ```
 
 ### 许可证
@@ -199,9 +259,12 @@ print(f"cost={result.best_cost:.5f}  可行={result.is_feasible}")
 ```bash
 git clone https://github.com/frankwyf/optimization-metaheuristics.git
 cd optimization-metaheuristics
-python -m venv .venv && .venv\Scripts\activate
-pip install -r requirements.txt
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 ```
+
+Windows PowerShell では `python -m venv .venv` で環境を作成し、`.venv\Scripts\Activate.ps1` で有効化してください。
 
 **統合 CLI の使用：**
 ```bash

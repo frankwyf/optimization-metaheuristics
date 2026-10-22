@@ -1,11 +1,11 @@
-"""Genetic Algorithm (GA) with Ant Colony-assisted restart for the welded-beam problem.
+"""Binary Genetic Algorithm with an Ant Colony-assisted restart option.
 
 A binary-encoded GA with rank-based selection, two-point crossover, and
 bitwise mutation. When the population stagnates, an Ant Colony Optimisation
 (ACO) perturbation is applied to diversify the gene pool.
 
 バイナリエンコードされた遺伝的アルゴリズム（GA）。
-二进制编码的遗传算法（GA），用于焊接梁问题。
+二进制编码的遗传算法（GA），默认问题为焊接梁设计。
 
 References
 ----------
@@ -20,8 +20,10 @@ from collections.abc import Callable
 
 import numpy as np
 
+from metaheuristics._validation import require_int, require_real
 from metaheuristics.algorithms.base import BaseOptimiser, OptimisationResult
-from metaheuristics.problem import BOUNDS, is_feasible, objective, penalized_objective
+from metaheuristics.problem import WELDED_BEAM_PROBLEM
+from metaheuristics.problems import OptimizationProblem, ProblemEvaluation
 
 # Default hyperparameters
 _POP_SIZE: int = 300
@@ -42,68 +44,106 @@ class _Individual:
     二进制编码的设计变量。
     """
 
-    _bounds = BOUNDS
+    _bounds = WELDED_BEAM_PROBLEM.bounds
     _bin_len = _BIN_LEN
 
-    def __init__(self, chromosome: str | None = None) -> None:
-        total = self._bin_len * len(self._bounds)
+    def __init__(
+        self,
+        chromosome: str | None = None,
+        bounds: tuple[tuple[float, float], ...] | None = None,
+    ) -> None:
+        self.bounds = bounds if bounds is not None else tuple(self._bounds)
+        total = self._bin_len * len(self.bounds)
         self.chromosome: str = chromosome if chromosome is not None else "0" * total
+        self._evaluation: ProblemEvaluation | None = None
 
     # ---- Encoding helpers ------------------------------------------------
     def _bin2float(self, bits: str, dim: int) -> float:
-        lo, hi = self._bounds[dim]
+        lo, hi = self.bounds[dim]
         return lo + int(bits, 2) / float((2 ** self._bin_len) - 1) * (hi - lo)
 
     def _segments(self) -> list[str]:
         L = self._bin_len
-        return [self.chromosome[i * L : (i + 1) * L] for i in range(len(self._bounds))]
+        return [self.chromosome[i * L : (i + 1) * L] for i in range(len(self.bounds))]
 
     def decode(self) -> list[float]:
         """Decode chromosome to a real-valued design vector."""
         return [self._bin2float(seg, i) for i, seg in enumerate(self._segments())]
 
     # ---- Genetic operators -----------------------------------------------
-    def randomize(self) -> None:
+    def randomize(self, rng: np.random.Generator | None = None) -> None:
         """Assign a uniformly random chromosome."""
-        bits = np.random.randint(0, 2, self._bin_len * len(self._bounds))
+        generator = rng if rng is not None else np.random.default_rng()
+        bits = generator.integers(0, 2, self._bin_len * len(self.bounds))
         self.chromosome = "".join(map(str, bits))
+        self._evaluation = None
 
-    def crossover(self, other: _Individual) -> tuple[str, str]:
+    def crossover(
+        self, other: _Individual, rng: np.random.Generator | None = None
+    ) -> tuple[str, str]:
         """Two-point crossover returning two child chromosomes."""
-        total = self._bin_len * len(self._bounds)
-        lo, hi = sorted(np.random.choice(range(total), size=2, replace=False))
+        generator = rng if rng is not None else np.random.default_rng()
+        total = self._bin_len * len(self.bounds)
+        lo, hi = sorted(generator.choice(total, size=2, replace=False))
         c1 = self.chromosome[:lo] + other.chromosome[lo:hi] + self.chromosome[hi:]
         c2 = other.chromosome[:lo] + self.chromosome[lo:hi] + other.chromosome[hi:]
         return c1, c2
 
-    def mutate(self, prob: float) -> None:
+    def mutate(
+        self,
+        prob: float,
+        problem: OptimizationProblem | None = None,
+        rng: np.random.Generator | None = None,
+    ) -> None:
         """Flip each bit independently with probability *prob*.
 
         Only accepts the mutation if the resulting individual is feasible.
         """
-        total = self._bin_len * len(self._bounds)
-        flip_mask = np.random.rand(total) < prob
+        generator = rng if rng is not None else np.random.default_rng()
+        active_problem = problem if problem is not None else WELDED_BEAM_PROBLEM
+        total = self._bin_len * len(self.bounds)
+        flip_mask = generator.random(total) < prob
         mask_int = int("".join(str(int(b)) for b in flip_mask), 2)
         new_chrom = f"{mask_int ^ int(self.chromosome, 2):0{total}b}"
-        candidate = _Individual(new_chrom).decode()
-        if is_feasible(candidate):
+        candidate = _Individual(new_chrom, tuple(self.bounds)).decode()
+        if active_problem.is_feasible(candidate):
             self.chromosome = new_chrom
+            self._evaluation = None
 
     # ---- Fitness ----------------------------------------------------------
-    def fitness(self) -> float:
+    def fitness(
+        self,
+        problem: OptimizationProblem | None = None,
+        evaluator: Callable[[list[float]], ProblemEvaluation] | None = None,
+    ) -> float:
         """Penalised objective (lower is better)."""
-        x = self.decode()
-        return penalized_objective(x)
+        if self._evaluation is None:
+            active_problem = problem if problem is not None else WELDED_BEAM_PROBLEM
+            self._evaluation = evaluator(self.decode()) if evaluator else active_problem.evaluate(self.decode())
+        return self._evaluation.penalized_value
+
+    @property
+    def evaluation(self) -> ProblemEvaluation:
+        """Cached objective and feasibility values."""
+        if self._evaluation is None:
+            self.fitness()
+        assert self._evaluation is not None
+        return self._evaluation
 
     def __repr__(self) -> str:
         x = self.decode()
-        return "h={:.6f} l={:.6f} t={:.6f} b={:.6f}".format(*x)
+        return "x=" + np.array2string(np.asarray(x), precision=6)
 
 
 # ---------------------------------------------------------------------------
 # Ant Colony perturbation (diversification operator)
 # ---------------------------------------------------------------------------
-def _ant_colony_perturb(population: list[_Individual]) -> list[_Individual]:
+def _ant_colony_perturb(
+    population: list[_Individual],
+    problem: OptimizationProblem,
+    rng: np.random.Generator,
+    evaluator: Callable[[list[float]], ProblemEvaluation],
+) -> list[_Individual]:
     """Lightly perturb the population using pheromone-guided mutation.
 
     This is a lightweight diversification heuristic that replaces fully
@@ -113,7 +153,7 @@ def _ant_colony_perturb(population: list[_Individual]) -> list[_Individual]:
     集団をフェロモンガイド付き変異で軽く摂動させる。
     使用信息素引导的变异轻微扰动种群。
     """
-    fitnesses = np.array([ind.fitness() for ind in population])
+    fitnesses = np.array([ind.fitness(problem, evaluator) for ind in population])
     # Normalise fitness so worse individuals mutate more
     min_f, max_f = fitnesses.min(), fitnesses.max()
     if max_f > min_f:
@@ -124,7 +164,7 @@ def _ant_colony_perturb(population: list[_Individual]) -> list[_Individual]:
     perturbed = []
     for ind, rate in zip(population, mutation_rates):
         new_ind = copy.deepcopy(ind)
-        new_ind.mutate(float(rate))
+        new_ind.mutate(float(rate), problem, rng)
         perturbed.append(new_ind)
     return perturbed
 
@@ -165,15 +205,26 @@ class GeneticAlgorithm(BaseOptimiser):
         stagnation_patience: int = _NOCHANGE,
         elite_fraction: float = _ELITE_FRAC,
         history_transform: Callable[[float], float] = lambda x: x,
+        problem: OptimizationProblem | None = None,
     ) -> None:
-        if seed is not None:
-            np.random.seed(seed)
+        super().__init__(problem=problem, seed=seed)
+        require_int("pop_size", pop_size, 2)
+        require_int("stagnation_patience", stagnation_patience, 1)
+        require_real("crossover_prob", crossover_prob, 0.0, 1.0)
+        require_real("mutation_prob", mutation_prob, 0.0, 1.0)
+        require_real("elite_fraction", elite_fraction, 0.0, 1.0)
+        if not 0.0 < elite_fraction <= 1.0 or int(pop_size * elite_fraction) < 1:
+            raise ValueError("elite_fraction must select at least one individual")
+        if not callable(history_transform):
+            raise TypeError("history_transform must be callable")
+        self._rng = np.random.default_rng(self.seed)
         self.pop_size = pop_size
         self.crossover_prob = crossover_prob
         self.mutation_prob = mutation_prob
         self.stagnation_patience = stagnation_patience
         self.elite_fraction = elite_fraction
         self.history_transform = history_transform
+        self._legacy_welded_beam_restarts = problem is None
 
     # ------------------------------------------------------------------
     # Selection
@@ -195,17 +246,23 @@ class GeneticAlgorithm(BaseOptimiser):
         new_population: list[_Individual] = list(reversed(elites))
         while len(new_population) < self.pop_size:
             p1, p2 = (
-                np.random.choice(elites, p=probs),  # type: ignore[arg-type]
-                np.random.choice(elites, p=probs),  # type: ignore[arg-type]
+                elites[int(self._rng.choice(n_pool, p=probs))],
+                elites[int(self._rng.choice(n_pool, p=probs))],
             )
-            if np.random.rand() < self.crossover_prob:
-                c1_chrom, c2_chrom = p1.crossover(p2)
-                child1, child2 = _Individual(c1_chrom), _Individual(c2_chrom)
+            if self._rng.random() < self.crossover_prob:
+                c1_chrom, c2_chrom = p1.crossover(p2, self._rng)
+                child1 = _Individual(c1_chrom, tuple(self.problem.bounds))
+                child2 = _Individual(c2_chrom, tuple(self.problem.bounds))
             else:
                 child1, child2 = copy.deepcopy(p1), copy.deepcopy(p2)
-            child1.mutate(self.mutation_prob)
-            child2.mutate(self.mutation_prob)
-            offspring = child1 if child1.fitness() < child2.fitness() else child2
+            child1.mutate(self.mutation_prob, self.problem, self._rng)
+            child2.mutate(self.mutation_prob, self.problem, self._rng)
+            offspring = (
+                child1
+                if child1.fitness(self.problem, self._evaluate)
+                < child2.fitness(self.problem, self._evaluate)
+                else child2
+            )
             new_population.append(offspring)
 
         return new_population
@@ -234,66 +291,71 @@ class GeneticAlgorithm(BaseOptimiser):
         -------
         OptimisationResult
         """
+        require_int("max_iteration", max_iteration)
+        self._start_run()
         # Initialise population
         population: list[_Individual] = []
         for _ in range(self.pop_size):
-            ind = _Individual()
-            ind.randomize()
+            ind = _Individual(bounds=tuple(self.problem.bounds))
+            ind.randomize(self._rng)
             population.append(ind)
-        population.sort(key=lambda ind: ind.fitness())
+        population.sort(key=lambda ind: ind.fitness(self.problem, self._evaluate))
 
         best = copy.deepcopy(population[0])
         patience_left = self.stagnation_patience
         stagnant_gens = 0
-        cost_history: list[float] = []
+        cost_history: list[float] = [self.history_transform(best.fitness(self.problem, self._evaluate))]
 
         for gen in range(max_iteration):
-            cost_history.append(self.history_transform(best.fitness()))
-
             # Early-stop / diversify
             if patience_left < 0:
-                if best.fitness() < 1.8:
+                best_fitness = best.fitness(self.problem, self._evaluate)
+                if self._legacy_welded_beam_restarts and best_fitness < 1.8:
                     break
-                if best.fitness() > 2.0:
-                    population = _ant_colony_perturb(population)
-                    patience_left = self.stagnation_patience // 2
-                else:
+                if self._legacy_welded_beam_restarts and best_fitness <= 2.0:
                     break
+                population = _ant_colony_perturb(
+                    population, self.problem, self._rng, self._evaluate
+                )
+                patience_left = self.stagnation_patience // 2
 
             # Diversify if stuck in a local optimum
-            if best.fitness() > 1.83 and stagnant_gens >= 70:
+            if (
+                self._legacy_welded_beam_restarts
+                and best.fitness(self.problem, self._evaluate) > 1.83
+                and stagnant_gens >= 70
+            ):
                 n_keep = int(self.pop_size * self.elite_fraction)
-                population.sort(key=lambda ind: ind.fitness())
-                population = population[:n_keep] + _ant_colony_perturb(population[n_keep:])
+                population.sort(key=lambda ind: ind.fitness(self.problem, self._evaluate))
+                if n_keep < len(population):
+                    population = population[:n_keep] + _ant_colony_perturb(
+                        population[n_keep:], self.problem, self._rng, self._evaluate
+                    )
                 stagnant_gens = 0
 
-            fitnesses = [ind.fitness() for ind in population]
+            fitnesses = [ind.fitness(self.problem, self._evaluate) for ind in population]
+            population = self._selection(population, fitnesses)
+            fitnesses = [ind.fitness(self.problem, self._evaluate) for ind in population]
             best_idx = int(np.argmin(fitnesses))
 
-            if fitnesses[best_idx] < best.fitness():
+            if fitnesses[best_idx] < best.fitness(self.problem, self._evaluate):
                 best = copy.deepcopy(population[best_idx])
                 patience_left = self.stagnation_patience
                 stagnant_gens = 0
             else:
                 stagnant_gens += 1
 
-            population = self._selection(population, fitnesses)
             patience_left -= 1
+            cost_history.append(self.history_transform(best.fitness(self.problem, self._evaluate)))
 
             if verbose and gen % 50 == 0:
                 print(
-                    f"[GA] gen={gen:5d}  best={self.history_transform(best.fitness()):.5f}"
+                    f"[GA] gen={gen:5d}  best={self.history_transform(best.fitness(self.problem, self._evaluate)):.5f}"
                     f"  patience={patience_left}"
                 )
 
         x = best.decode()
-        feasible = is_feasible(x)
-        return OptimisationResult(
-            best_x=x,
-            best_cost=objective(x) if feasible else best.fitness(),
-            cost_history=cost_history,
-            is_feasible=feasible,
-        )
+        return self._make_result(x, best.evaluation, cost_history)
 
 
 # ---------------------------------------------------------------------------
@@ -310,10 +372,7 @@ def _run_cli(
 
     import matplotlib.pyplot as plt
 
-    if seed is not None:
-        np.random.seed(seed)
-
-    ga = GeneticAlgorithm()
+    ga = GeneticAlgorithm(seed=seed)
     best_costs: list[float] = []
 
     for run_idx in range(runs):

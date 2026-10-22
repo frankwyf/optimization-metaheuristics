@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import inspect
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -88,7 +89,8 @@ def plot_run_statistics(
         _, ax = plt.subplots(figsize=(8, 5))
     labels = list(results_per_algo.keys())
     data = [results_per_algo[k] for k in labels]
-    ax.boxplot(data, labels=labels, patch_artist=True)
+    label_argument = "tick_labels" if "tick_labels" in inspect.signature(ax.boxplot).parameters else "labels"
+    ax.boxplot(data, patch_artist=True, **{label_argument: labels})
     ax.set_title(title)
     ax.set_ylabel("Best feasible cost")
 

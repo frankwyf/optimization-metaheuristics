@@ -3,8 +3,9 @@ message: "If you use this software in your research, please cite it using the fo
 title: "optimization-metaheuristics"
 abstract: >
   A Python implementation of metaheuristic optimization algorithms (Genetic
-  Algorithm, Particle Swarm Optimization, and Simulated Annealing) benchmarked
-  on the welded-beam constrained engineering design problem (Deb 1991).
+  Algorithm, Particle Swarm Optimization, Simulated Annealing, and Differential
+  Evolution) for bounded minimization problems and the welded-beam engineering
+  benchmark (Deb 1991), with reproducible multi-seed experiments.
   Includes a canonical problem module, refactored algorithm classes with type
   hints, a comprehensive test suite, and trilingual documentation.
 authors:
@@ -13,13 +14,14 @@ authors:
     alias: frankwyf
 repository-code: "https://github.com/frankwyf/optimization-metaheuristics"
 license: MIT
-version: "1.1.0"
-date-released: "2026-06-30"
+version: "1.3.0"
+date-released: "2026-10-22"
 keywords:
   - metaheuristics
   - genetic algorithm
   - particle swarm optimization
   - simulated annealing
+  - differential evolution
   - engineering design optimization
   - welded beam
   - constrained optimization
